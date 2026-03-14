@@ -3,1090 +3,700 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Annotia — Where Scholars Meet</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Annotia — AI-Powered Research Summaries</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0d14;
-    --surface: #111520;
-    --surface2: #161c2c;
-    --surface3: #1d2438;
-    --border: #222d45;
-    --border-light: #2e3d5c;
-    --gold: #c9a84c;
-    --gold-dim: rgba(201,168,76,0.12);
-    --gold-glow: rgba(201,168,76,0.06);
-    --teal: #4a9ead;
-    --teal-dim: rgba(74,158,173,0.12);
-    --green: #4a9e6e;
-    --text: #e8e4dc;
-    --text-dim: #8a95ad;
-    --text-muted: #445068;
-    --preprint: #d4843a;
+    --bg: #1c2333;
+    --surface: #242e45;
+    --surface2: #2c3854;
+    --surface3: #334060;
+    --border: #3a4d70;
+    --border-light: #4a5f85;
+    --gold: #d4b05a;
+    --gold-dim: rgba(212,176,90,0.18);
+    --teal: #5ab4c8;
+    --teal-dim: rgba(90,180,200,0.18);
+    --red: #d06060;
+    --red-dim: rgba(208,96,96,0.18);
+    --green: #5ab882;
+    --green-dim: rgba(90,184,130,0.18);
+    --text: #f0ece4;
+    --text-dim: #a0adc8;
+    --text-muted: #6a7a96;
+    --preprint: #e09050;
+    --preprint-dim: rgba(224,144,80,0.18);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── NOISE TEXTURE OVERLAY ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-  }
-
-  /* ── HEADER ── */
+  /* HEADER */
   header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    padding: 0 2rem;
+    background: var(--surface);
     border-bottom: 1px solid var(--border);
-    background: rgba(10,13,20,0.85);
-    backdrop-filter: blur(16px);
+    padding: 0 2rem;
+    position: sticky; top: 0; z-index: 100;
   }
-
   .header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 60px;
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 58px;
+  }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; color: var(--text); text-decoration: none; }
+  .logo span { color: var(--gold); }
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+  .header-tag {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    color: var(--text-muted); letter-spacing: 0.08em;
+  }
+  .header-link {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    padding: 0.3rem 0.8rem; border: 1px solid rgba(212,176,90,0.3);
+    border-radius: 2px; transition: all 0.2s;
+  }
+  .header-link:hover { background: var(--gold-dim); }
+
+  /* HERO SEARCH */
+  .hero {
+    max-width: 700px; margin: 4rem auto 2rem; padding: 0 2rem;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--gold); margin-bottom: 1rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  }
+  .eyebrow-line { width: 24px; height: 1px; background: var(--gold); opacity: 0.5; }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif; font-size: 2.6rem;
+    font-weight: 600; line-height: 1.2; color: var(--text);
+    margin-bottom: 0.75rem; letter-spacing: -0.01em;
+  }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-sub {
+    font-size: 0.95rem; color: var(--text-dim); margin-bottom: 2rem;
+    line-height: 1.7; font-weight: 300;
   }
 
-  .logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.7rem;
-    font-weight: 700;
-    color: var(--text);
-    text-decoration: none;
+  /* SEARCH BOX */
+  .search-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1.5rem; margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus-within { border-color: var(--gold); }
+  .search-label {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted); display: block; margin-bottom: 0.5rem;
+    text-align: left;
+  }
+  .search-row { display: flex; gap: 0.5rem; }
+  .search-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.85rem;
+    padding: 0.7rem 1rem; border-radius: 2px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--gold); }
+  .search-input::placeholder { color: var(--text-muted); }
+  .btn-search {
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    padding: 0.7rem 1.5rem; background: var(--gold); border: none;
+    color: var(--bg); cursor: pointer; letter-spacing: 0.08em;
+    text-transform: uppercase; font-weight: 500; border-radius: 2px;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-search:hover { background: #e0c060; }
+  .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* EXAMPLE DOIS */
+  .examples {
+    text-align: left; margin-top: 1rem;
+    padding-top: 1rem; border-top: 1px solid var(--border);
+  }
+  .examples-label {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted); margin-bottom: 0.5rem;
+  }
+  .doi-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .doi-chip {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    padding: 0.2rem 0.5rem; background: var(--surface2);
+    border: 1px solid var(--border); color: var(--text-dim);
+    border-radius: 2px; cursor: pointer; transition: all 0.2s;
     letter-spacing: 0.02em;
   }
+  .doi-chip:hover { border-color: var(--gold); color: var(--gold); }
 
-  .logo span { color: var(--gold); }
+  /* LOADING */
+  .loading-state { text-align: center; padding: 3rem 2rem; display: none; }
+  .loading-state.visible { display: block; }
+  .spinner {
+    width: 36px; height: 36px; border: 2px solid var(--border);
+    border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-step {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 0.35rem;
+  }
+  .loading-step.active { color: var(--gold); }
+  .loading-step.done { color: var(--green); }
 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
+  /* ERROR */
+  .error-card {
+    background: var(--red-dim); border: 1px solid rgba(208,96,96,0.3);
+    border-radius: 4px; padding: 1.25rem; margin: 1rem 0;
+    display: none;
+  }
+  .error-card.visible { display: block; }
+  .error-title {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--red); text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+  .error-text { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+
+  /* PAPER RESULT */
+  .paper-result {
+    max-width: 1100px; margin: 0 auto; padding: 0 2rem 4rem;
+    display: none;
+  }
+  .paper-result.visible { display: block; }
+  .back-btn {
+    font-family: 'DM Mono', monospace; font-size: 0.68rem;
+    color: var(--text-muted); background: none; border: none;
+    cursor: pointer; letter-spacing: 0.06em; padding: 0;
+    margin-bottom: 1.5rem; transition: color 0.2s;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .back-btn:hover { color: var(--gold); }
+
+  /* Status badges */
+  .status-row { display: flex; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .status-badge {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    padding: 0.2rem 0.55rem; border-radius: 2px;
+    letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+  }
+  .badge-preprint { background: var(--preprint-dim); color: var(--preprint); border: 1px solid rgba(224,144,80,0.3); }
+  .badge-peer { background: var(--green-dim); color: var(--green); border: 1px solid rgba(90,184,130,0.3); }
+  .badge-field { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(90,180,200,0.3); }
+  .badge-open { background: var(--green-dim); color: var(--green); border: 1px solid rgba(90,184,130,0.3); }
+  .badge-paywall { background: rgba(160,100,60,0.15); color: #c8885a; border: 1px solid rgba(160,100,60,0.3); }
+  .badge-ai { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(212,176,90,0.3); }
+  .badge-warn { background: var(--red-dim); color: var(--red); border: 1px solid rgba(208,96,96,0.3); }
+
+  .paper-title {
+    font-family: 'Cormorant Garamond', serif; font-size: 1.9rem;
+    font-weight: 600; line-height: 1.25; color: var(--text);
+    margin-bottom: 0.75rem; letter-spacing: -0.01em;
+  }
+  .paper-authors { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.5rem; line-height: 1.6; }
+  .paper-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
+  .meta-item {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    color: var(--text-muted); letter-spacing: 0.04em;
+  }
+  .meta-item strong { color: var(--text-dim); font-weight: 500; }
+  .paper-divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+  /* Preprint warning */
+  .preprint-warning {
+    background: var(--preprint-dim); border: 1px solid rgba(224,144,80,0.35);
+    border-radius: 4px; padding: 0.875rem 1rem; margin-bottom: 1.5rem;
+    display: flex; gap: 0.75rem; align-items: flex-start;
+  }
+  .warning-text {
+    font-family: 'DM Mono', monospace; font-size: 0.67rem;
+    color: var(--preprint); line-height: 1.6; letter-spacing: 0.02em;
   }
 
-  .header-right a {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--text-dim);
-    text-decoration: none;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: color 0.2s;
+  /* Paywall notice */
+  .paywall-notice {
+    background: rgba(160,100,60,0.12); border: 1px solid rgba(160,100,60,0.3);
+    border-radius: 4px; padding: 0.875rem 1rem; margin-bottom: 1.5rem;
+    display: flex; gap: 0.75rem; align-items: flex-start;
   }
-  .header-right a:hover { color: var(--gold); }
-
-  .btn-header {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    padding: 0.45rem 1.1rem;
-    border: 1px solid var(--gold);
-    background: var(--gold-dim);
-    color: var(--gold);
-    cursor: pointer;
-    letter-spacing: 0.06em;
-    border-radius: 2px;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-  .btn-header:hover { background: var(--gold); color: var(--bg); }
-
-  /* ── HERO ── */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 8rem 2rem 4rem;
-    position: relative;
-    z-index: 1;
+  .paywall-text {
+    font-family: 'DM Mono', monospace; font-size: 0.67rem;
+    color: #c8885a; line-height: 1.6; letter-spacing: 0.02em;
   }
 
-  /* Radial glow behind hero */
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 70%);
-    pointer-events: none;
+  /* AI Summary */
+  .ai-summary {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; margin-bottom: 2rem; overflow: hidden;
   }
-
-  .hero-eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    margin-bottom: 1.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .eyebrow-line {
-    width: 30px;
-    height: 1px;
-    background: var(--gold);
-    opacity: 0.5;
-  }
-
-  .hero-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(3rem, 7vw, 5.5rem);
-    font-weight: 600;
-    line-height: 1.1;
-    color: var(--text);
-    max-width: 900px;
-    margin-bottom: 1.5rem;
-    letter-spacing: -0.02em;
-  }
-
-  .hero-title em {
-    font-style: italic;
-    color: var(--gold);
-  }
-
-  .hero-subtitle {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    color: var(--text-dim);
-    max-width: 580px;
-    margin-bottom: 3rem;
-    font-weight: 300;
-  }
-
-  /* Waitlist Form */
-  .waitlist-form {
-    display: flex;
-    gap: 0;
-    max-width: 480px;
-    width: 100%;
-    margin-bottom: 1.25rem;
-    border: 1px solid var(--border-light);
-    border-radius: 3px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-  .waitlist-form:focus-within { border-color: var(--gold); }
-
-  .waitlist-input {
-    flex: 1;
-    background: var(--surface);
-    border: none;
-    padding: 0.9rem 1.2rem;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    outline: none;
-  }
-  .waitlist-input::placeholder { color: var(--text-muted); }
-
-  .waitlist-btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    padding: 0.9rem 1.5rem;
-    background: var(--gold);
-    border: none;
-    color: var(--bg);
-    cursor: pointer;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 500;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .waitlist-btn:hover { background: #e0bc60; }
-
-  .waitlist-note {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-  }
-
-  .waitlist-note span { color: var(--green); }
-
-  /* Hero Stats */
-  .hero-stats {
-    display: flex;
-    gap: 3rem;
-    margin-top: 4rem;
-    padding-top: 3rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .hero-stat {
-    text-align: center;
-  }
-
-  .stat-number {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1;
-    margin-bottom: 0.3rem;
-  }
-
-  .stat-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
-  /* ── SECTION BASE ── */
-  section {
-    position: relative;
-    z-index: 1;
-    padding: 6rem 2rem;
-  }
-
-  .section-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .section-eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: var(--gold);
-    margin-bottom: 1rem;
-  }
-
-  .section-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.2;
-    margin-bottom: 1rem;
-    letter-spacing: -0.01em;
-  }
-
-  .section-body {
-    font-size: 1rem;
-    line-height: 1.75;
-    color: var(--text-dim);
-    max-width: 560px;
-    font-weight: 300;
-  }
-
-  /* ── PROBLEM SECTION ── */
-  .problem {
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .problem-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: center;
-  }
-
-  .problem-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .problem-card {
+  .ai-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
     background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1.25rem;
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    transition: border-color 0.3s;
-    cursor: default;
   }
-  .problem-card:hover { border-color: var(--border-light); }
-
-  .problem-icon {
-    font-size: 1.25rem;
-    flex-shrink: 0;
-    margin-top: 0.1rem;
+  .ai-title { display: flex; align-items: center; gap: 0.6rem; }
+  .ai-icon {
+    width: 20px; height: 20px; background: var(--gold-dim);
+    border: 1px solid rgba(212,176,90,0.3); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; color: var(--gold); flex-shrink: 0;
   }
-
-  .problem-card-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.3rem;
+  .ai-label {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase;
   }
-
-  .problem-card-text {
-    font-size: 0.82rem;
-    line-height: 1.6;
-    color: var(--text-dim);
+  .ai-disclaimer {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--text-muted);
   }
+  .ai-body { padding: 1.25rem; }
 
-  /* ── FEATURES ── */
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-top: 3.5rem;
+  /* Tabs */
+  .summary-tabs { display: flex; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+  .tab {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    padding: 0.5rem 1rem; color: var(--text-muted); cursor: pointer;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: all 0.2s; background: none;
+    border-top: none; border-left: none; border-right: none;
   }
+  .tab:hover { color: var(--text-dim); }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
 
-  .feature-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1.75rem;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
+  .summary-section { margin-bottom: 1.25rem; }
+  .summary-section:last-child { margin-bottom: 0; }
+  .section-label {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--gold); margin-bottom: 0.5rem;
   }
+  .section-text { font-size: 0.88rem; line-height: 1.8; color: var(--text); }
 
-  .feature-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
+  .jargon-term {
+    display: block; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 2px;
+    padding: 0.6rem 1rem; margin-bottom: 0.5rem;
   }
-
-  .feature-card:hover { border-color: var(--border-light); transform: translateY(-2px); }
-  .feature-card:hover::before { opacity: 1; }
-
-  .feature-icon {
-    width: 36px;
-    height: 36px;
-    background: var(--gold-dim);
-    border: 1px solid rgba(201,168,76,0.2);
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    margin-bottom: 1rem;
+  .jargon-term strong {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--teal); font-weight: 500; display: block; margin-bottom: 0.3rem;
   }
+  .jargon-term span { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
 
-  .feature-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.5rem;
+  .flag-btn {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    padding: 0.3rem 0.7rem; background: transparent;
+    border: 1px solid var(--border); color: var(--text-muted);
+    cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s;
+    border-radius: 2px; margin-top: 1rem;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+  }
+  .flag-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* Abstract */
+  .abstract {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1.25rem; margin-bottom: 2rem;
+  }
+  .abstract-label {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted); margin-bottom: 0.75rem;
+  }
+  .abstract-text {
+    font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+    line-height: 1.8; color: var(--text-dim); font-style: italic;
   }
 
-  .feature-text {
-    font-size: 0.82rem;
-    line-height: 1.65;
-    color: var(--text-dim);
-  }
-
-  /* ── HOW IT WORKS ── */
-  .how {
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    margin-top: 3.5rem;
-    position: relative;
-  }
-
-  .steps::before {
-    content: '';
-    position: absolute;
-    top: 20px;
-    left: 10%;
-    right: 10%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border-light), var(--border-light), transparent);
-  }
-
-  .step {
-    padding: 0 1.5rem;
-    text-align: center;
-    position: relative;
-  }
-
-  .step-number {
-    width: 40px;
-    height: 40px;
-    background: var(--surface2);
-    border: 1px solid var(--border-light);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--gold);
-    margin: 0 auto 1.25rem;
-    position: relative;
-    z-index: 1;
-    letter-spacing: 0.05em;
-  }
-
-  .step-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.5rem;
-  }
-
-  .step-text {
-    font-size: 0.8rem;
-    line-height: 1.6;
-    color: var(--text-dim);
-  }
-
-  /* ── FIELDS ── */
-  .fields-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2rem;
-  }
-
-  .field-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    padding: 0.4rem 0.9rem;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    border-radius: 2px;
-    letter-spacing: 0.05em;
-    transition: all 0.2s;
-    cursor: default;
-  }
-
-  .field-tag:hover { border-color: var(--gold); color: var(--gold); }
-  .field-tag.featured { border-color: rgba(201,168,76,0.4); color: var(--gold); background: var(--gold-dim); }
-
-  /* ── QUOTE/MANIFESTO ── */
-  .manifesto {
-    text-align: center;
-    padding: 8rem 2rem;
-  }
-
-  .manifesto-quote {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(1.5rem, 3.5vw, 2.5rem);
-    font-weight: 400;
-    font-style: italic;
-    color: var(--text);
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    line-height: 1.5;
-    letter-spacing: -0.01em;
-  }
-
-  .manifesto-quote em { color: var(--gold); font-style: normal; }
-
-  .manifesto-attribution {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  /* ── TRUST / TRANSPARENCY ── */
-  .trust-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: 3rem;
-  }
-
-  .trust-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1.5rem;
-    display: flex;
-    gap: 1rem;
-  }
-
-  .trust-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 0.35rem;
-  }
-
-  .trust-dot.gold { background: var(--gold); }
-  .trust-dot.teal { background: var(--teal); }
-  .trust-dot.green { background: var(--green); }
-  .trust-dot.preprint { background: var(--preprint); }
-
-  .trust-item-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.3rem;
-  }
-
-  .trust-item-text {
-    font-size: 0.8rem;
-    line-height: 1.6;
-    color: var(--text-dim);
-  }
-
-  /* ── CTA SECTION ── */
-  .cta-section {
-    text-align: center;
-    padding: 8rem 2rem;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cta-section::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .cta-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2.2rem, 5vw, 4rem);
-    font-weight: 600;
-    color: var(--text);
-    max-width: 700px;
-    margin: 0 auto 1.25rem;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-  }
-
-  .cta-title em { color: var(--gold); font-style: italic; }
-
-  .cta-sub {
-    font-size: 1rem;
-    color: var(--text-dim);
-    max-width: 460px;
-    margin: 0 auto 2.5rem;
-    font-weight: 300;
-    line-height: 1.7;
-  }
-
-  .cta-form {
-    display: flex;
-    gap: 0;
-    max-width: 440px;
-    width: 100%;
-    margin: 0 auto 1rem;
-    border: 1px solid var(--border-light);
-    border-radius: 3px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-  .cta-form:focus-within { border-color: var(--gold); }
-
-  .cta-input {
-    flex: 1;
-    background: var(--surface2);
-    border: none;
-    padding: 0.9rem 1.2rem;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    outline: none;
-  }
-  .cta-input::placeholder { color: var(--text-muted); }
-
-  .cta-btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    padding: 0.9rem 1.5rem;
-    background: var(--gold);
-    border: none;
-    color: var(--bg);
-    cursor: pointer;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    font-weight: 500;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .cta-btn:hover { background: #e0bc60; }
-
-  .cta-note {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    padding: 2rem;
-    border-top: 1px solid var(--border);
-    position: relative;
-    z-index: 1;
-  }
-
-  .footer-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .footer-logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--text-muted);
-  }
-
-  .footer-logo span { color: var(--gold); opacity: 0.6; }
-
-  .footer-text {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  .footer-links a {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    text-decoration: none;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: color 0.2s;
-  }
-  .footer-links a:hover { color: var(--gold); }
-
-  /* ── TOAST ── */
+  /* Toast */
   .toast {
-    position: fixed;
-    bottom: 2rem;
-    left: 50%;
+    position: fixed; bottom: 2rem; left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: var(--surface3);
-    border: 1px solid var(--border-light);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    padding: 0.8rem 1.5rem;
-    border-radius: 3px;
-    z-index: 1000;
-    opacity: 0;
-    transition: all 0.3s ease;
-    letter-spacing: 0.05em;
-    white-space: nowrap;
+    background: var(--surface3); border: 1px solid var(--border-light);
+    color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    padding: 0.8rem 1.5rem; border-radius: 3px; z-index: 1000;
+    opacity: 0; transition: all 0.3s ease; white-space: nowrap;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ── ANIMATIONS ── */
-  .fade-up {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border); padding: 1.5rem 2rem;
+    text-align: center; margin-top: 4rem;
   }
-  .fade-up.visible { opacity: 1; transform: translateY(0); }
-
-  .fade-up-delay-1 { transition-delay: 0.1s; }
-  .fade-up-delay-2 { transition-delay: 0.2s; }
-  .fade-up-delay-3 { transition-delay: 0.3s; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 900px) {
-    .problem-grid { grid-template-columns: 1fr; gap: 2rem; }
-    .features-grid { grid-template-columns: 1fr; }
-    .steps { grid-template-columns: 1fr 1fr; gap: 2rem; }
-    .steps::before { display: none; }
-    .trust-grid { grid-template-columns: 1fr; }
-    .hero-stats { gap: 1.5rem; }
-    .header-right a { display: none; }
+  .footer-text {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    color: var(--text-muted); letter-spacing: 0.08em;
   }
+  .footer-text a { color: var(--gold); text-decoration: none; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="header-inner">
-    <a href="#" class="logo">Anno<span>tia</span></a>
+    <a href="/" class="logo" onclick="resetApp(); return false;">Anno<span>tia</span></a>
     <div class="header-right">
-      <a href="#features">Features</a>
-      <a href="#how">How it works</a>
-      <a href="#cta" class="btn-header">Join Waitlist</a>
+      <span class="header-tag">AI-Powered Research Summaries</span>
+      <a href="/" class="header-link">annotia.io</a>
     </div>
   </div>
 </header>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-eyebrow">
-    <div class="eyebrow-line"></div>
-    Open Science · AI-Powered · Community Verified
-    <div class="eyebrow-line"></div>
-  </div>
-
-  <h1 class="hero-title fade-up">
-    The place where <em>scholarly research</em> meets its audience
-  </h1>
-
-  <p class="hero-subtitle fade-up fade-up-delay-1">
-    Annotia surfaces open-access academic papers, translates them into plain language with AI, and gives researchers, students, and curious minds a home to discuss what the science actually says.
-  </p>
-
-  <div class="waitlist-form fade-up fade-up-delay-2">
-    <input class="waitlist-input" type="email" placeholder="your@email.com" id="heroEmail" />
-    <button class="waitlist-btn" onclick="joinWaitlist('heroEmail')">Join Waitlist</button>
-  </div>
-
-  <div class="waitlist-note fade-up fade-up-delay-3">
-    <span>✓ Free forever</span> for core features · No credit card · Founding members get Pro free for 12 months
-  </div>
-
-  <div class="hero-stats fade-up">
-    <div class="hero-stat">
-      <div class="stat-number">50+</div>
-      <div class="stat-label">Seed Papers</div>
+<!-- SEARCH HERO -->
+<div id="searchSection">
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-line"></div>
+      Open Science · AI Summaries · Community Verified
+      <div class="eyebrow-line"></div>
     </div>
-    <div class="hero-stat">
-      <div class="stat-number">3</div>
-      <div class="stat-label">AI Summary Layers</div>
-    </div>
-    <div class="hero-stat">
-      <div class="stat-number">100%</div>
-      <div class="stat-label">Open Access</div>
-    </div>
-    <div class="hero-stat">
-      <div class="stat-number">0</div>
-      <div class="stat-label">Paywalled Content</div>
-    </div>
-  </div>
-</section>
+    <h1 class="hero-title">Research made <em>readable</em></h1>
+    <p class="hero-sub">Paste any paper DOI to get an instant AI-powered plain language summary — what they studied, what they found, and what it means for the real world.</p>
 
-<!-- PROBLEM -->
-<section class="problem">
-  <div class="section-inner">
-    <div class="problem-grid">
-      <div>
-        <div class="section-eyebrow">The Problem</div>
-        <h2 class="section-title">Academic research is broken for everyone except academics</h2>
-        <p class="section-body">Billions of dollars of publicly funded research sits behind paywalls, buried in jargon, and discussed only in the narrow corridors of academia. The knowledge exists. The audience exists. The bridge doesn't.</p>
+    <div class="search-box">
+      <label class="search-label">Paper DOI</label>
+      <div class="search-row">
+        <input class="search-input" type="text" id="doiInput" placeholder="e.g. 10.1371/journal.pmed.1001482" />
+        <button class="btn-search" onclick="generateSummary()" id="generateBtn">Summarise</button>
       </div>
+      <div class="examples">
+        <div class="examples-label">Try an example</div>
+        <div class="doi-chips">
+          <span class="doi-chip" onclick="loadDoi('10.1126/science.aac4716')">Reproducibility Project — Science 2015</span>
+          <span class="doi-chip" onclick="loadDoi('10.1371/journal.pmed.1001482')">PLOS Medicine</span>
+          <span class="doi-chip" onclick="loadDoi('10.1371/journal.pbio.1002165')">PLOS Biology</span>
+          <span class="doi-chip" onclick="loadDoi('10.1038/s41562-018-0399-z')">Nature Human Behaviour</span>
+          <span class="doi-chip" onclick="loadDoi('10.1371/journal.pone.0220172')">PLOS ONE</span>
+        </div>
+      </div>
+    </div>
 
-      <div class="problem-cards">
-        <div class="problem-card fade-up">
-          <div class="problem-icon">🔒</div>
-          <div>
-            <div class="problem-card-title">Most research is paywalled</div>
-            <div class="problem-card-text">The majority of peer-reviewed journals charge $30–50 per article. Publicly funded research, locked away from the public.</div>
+    <div class="error-card" id="errorCard">
+      <div class="error-title">⚠ Something went wrong</div>
+      <div class="error-text" id="errorText"></div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <div class="loading-step" id="step1">① Fetching paper metadata...</div>
+    <div class="loading-step" id="step2">② Sending to Claude for analysis...</div>
+    <div class="loading-step" id="step3">③ Generating structured summary...</div>
+    <div class="loading-step" id="step4">④ Preparing your paper page...</div>
+  </div>
+</div>
+
+<!-- PAPER RESULT -->
+<div class="paper-result" id="paperResult">
+  <div style="max-width:1100px; margin:0 auto; padding: 1.5rem 2rem 0;">
+    <button class="back-btn" onclick="resetApp()">← Summarise another paper</button>
+  </div>
+
+  <div style="max-width:1100px; margin:0 auto; padding: 0 2rem;">
+
+    <div id="preprintWarning" class="preprint-warning" style="display:none">
+      <div>⚠</div>
+      <div class="warning-text">
+        <strong>This paper has not been peer reviewed.</strong> Claims should be treated as preliminary and have not been independently verified by journal reviewers.
+      </div>
+    </div>
+
+    <div id="paywallNotice" class="paywall-notice" style="display:none">
+      <div>⚿</div>
+      <div class="paywall-text">
+        <strong>This paper requires a subscription to read in full.</strong> The AI summary below is based on the publicly available abstract only. Full text access requires institutional or personal journal subscription.
+      </div>
+    </div>
+
+    <div class="status-row" id="statusRow"></div>
+    <h1 class="paper-title" id="paperTitle"></h1>
+    <div class="paper-authors" id="paperAuthors"></div>
+    <div class="paper-meta" id="paperMeta"></div>
+    <div class="paper-divider"></div>
+
+    <!-- AI Summary -->
+    <div class="ai-summary">
+      <div class="ai-header">
+        <div class="ai-title">
+          <div class="ai-icon">✦</div>
+          <span class="ai-label">Annotia AI Summary — Powered by Claude</span>
+        </div>
+        <div class="ai-disclaimer">AI-generated · Always verify against source</div>
+      </div>
+      <div class="ai-body">
+        <div class="summary-tabs">
+          <button class="tab active" onclick="switchTab(this, 'summary')">Summary</button>
+          <button class="tab" onclick="switchTab(this, 'jargon')">Jargon Guide</button>
+          <button class="tab" onclick="switchTab(this, 'implications')">Real World Impact</button>
+        </div>
+
+        <div class="tab-content active" id="tab-summary">
+          <div class="summary-section">
+            <div class="section-label">What They Studied</div>
+            <div class="section-text" id="whatStudied"></div>
+          </div>
+          <div class="summary-section">
+            <div class="section-label">How They Studied It</div>
+            <div class="section-text" id="howStudied"></div>
+          </div>
+          <div class="summary-section">
+            <div class="section-label">What They Found</div>
+            <div class="section-text" id="whatFound"></div>
+          </div>
+          <div class="summary-section">
+            <div class="section-label">How Confident Should We Be</div>
+            <div class="section-text" id="confidence"></div>
+          </div>
+          <button class="flag-btn" onclick="showToast('Thank you — flagged for review')">⚑ Flag an error in this summary</button>
+        </div>
+
+        <div class="tab-content" id="tab-jargon">
+          <div class="section-label" style="margin-bottom:0.75rem">Plain Language Guide</div>
+          <div id="jargonContent"></div>
+        </div>
+
+        <div class="tab-content" id="tab-implications">
+          <div class="summary-section">
+            <div class="section-label">What This Means Outside the Lab</div>
+            <div class="section-text" id="realWorld"></div>
+          </div>
+          <div class="summary-section">
+            <div class="section-label">Why You Should Care</div>
+            <div class="section-text" id="whyCare"></div>
           </div>
         </div>
-
-        <div class="problem-card fade-up fade-up-delay-1">
-          <div class="problem-icon">📖</div>
-          <div>
-            <div class="problem-card-title">The rest is unreadable</div>
-            <div class="problem-card-text">Open access papers are written for specialists. A PhD in the field is often a prerequisite just to understand the abstract.</div>
-          </div>
-        </div>
-
-        <div class="problem-card fade-up fade-up-delay-2">
-          <div class="problem-icon">💬</div>
-          <div>
-            <div class="problem-card-title">Discussion happens nowhere</div>
-            <div class="problem-card-text">Twitter threads, obscure forums, private email chains. There is no serious, structured home for public engagement with research.</div>
-          </div>
-        </div>
-
-        <div class="problem-card fade-up fade-up-delay-3">
-          <div class="problem-icon">⚠</div>
-          <div>
-            <div class="problem-card-title">Bad science spreads unchecked</div>
-            <div class="problem-card-text">Preprints go viral before peer review. Retractions are invisible. Nobody is watching the watchmen.</div>
-          </div>
-        </div>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- FEATURES -->
-<section id="features">
-  <div class="section-inner">
-    <div class="section-eyebrow">What Annotia Does</div>
-    <h2 class="section-title">Everything a paper deserves.<br>Nothing it doesn't.</h2>
-
-    <div class="features-grid">
-      <div class="feature-card fade-up">
-        <div class="feature-icon">✦</div>
-        <div class="feature-title">AI Summary — Three Layers Deep</div>
-        <div class="feature-text">Every paper gets a structured AI summary: what they studied, how they studied it, what they found, and how confident we should be. Plus a plain-language jargon guide and a real-world implications section that answers the question everyone actually has — so what?</div>
-      </div>
-
-      <div class="feature-card fade-up fade-up-delay-1">
-        <div class="feature-icon">⚑</div>
-        <div class="feature-title">Transparent & Correctable</div>
-        <div class="feature-text">Every AI summary is clearly labelled, cites the specific sections of the paper it draws from, and carries a prominent flag button. The community can report errors. Verified summaries earn a community badge. We treat AI as a tool, not an oracle.</div>
-      </div>
-
-      <div class="feature-card fade-up fade-up-delay-2">
-        <div class="feature-icon">◎</div>
-        <div class="feature-title">Structured Discussion</div>
-        <div class="feature-text">Comments require source citations for disputed claims. Researchers can verify their institutional affiliation for a credibility badge. Authors can respond directly. Upvoting surfaces quality, not just popularity.</div>
-      </div>
-
-      <div class="feature-card fade-up fade-up-delay-3">
-        <div class="feature-icon">📊</div>
-        <div class="feature-title">Community Confidence Score</div>
-        <div class="feature-text">Every paper carries a live confidence score based on peer review status, pre-registration, sample size, community flags, and methodological quality signals. A single number that tells you how much weight to give a finding.</div>
-      </div>
-
-      <div class="feature-card fade-up">
-        <div class="feature-icon">🔄</div>
-        <div class="feature-title">Retraction Tracking</div>
-        <div class="feature-text">Integrated with the Retraction Watch database. When a paper is retracted, its page is automatically flagged, all saved users are notified, and the confidence score updates immediately. Bad science doesn't quietly disappear here — it gets marked.</div>
-      </div>
-
-      <div class="feature-card fade-up fade-up-delay-1">
-        <div class="feature-icon">⚡</div>
-        <div class="feature-title">Preprint Pipeline</div>
-        <div class="feature-text">New papers from PsyArXiv, bioRxiv, arXiv and medRxiv are added daily with clear preprint warnings. Be part of the conversation the moment research drops — not six months later when it hits the press.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how" id="how">
-  <div class="section-inner">
-    <div class="section-eyebrow">How It Works</div>
-    <h2 class="section-title">From dense paper to rich discussion<br>in seconds</h2>
-
-    <div class="steps">
-      <div class="step fade-up">
-        <div class="step-number">01</div>
-        <div class="step-title">Paper is added</div>
-        <div class="step-text">Via DOI, PDF upload, or our daily preprint pipeline. Metadata, authors, and status are automatically fetched.</div>
-      </div>
-
-      <div class="step fade-up fade-up-delay-1">
-        <div class="step-number">02</div>
-        <div class="step-title">AI reads it</div>
-        <div class="step-text">Claude generates a structured three-layer summary — plain language overview, jargon guide, and real-world implications.</div>
-      </div>
-
-      <div class="step fade-up fade-up-delay-2">
-        <div class="step-number">03</div>
-        <div class="step-title">Community scrutinises</div>
-        <div class="step-text">Researchers, students, and curious readers discuss the paper. Claims require sources. Quality floats to the top.</div>
-      </div>
-
-      <div class="step fade-up fade-up-delay-3">
-        <div class="step-number">04</div>
-        <div class="step-title">Score updates live</div>
-        <div class="step-text">The community confidence score evolves as discussion deepens, flags are raised, and the paper moves through peer review.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FIELDS -->
-<section>
-  <div class="section-inner">
-    <div class="section-eyebrow">Launching With</div>
-    <h2 class="section-title">Psychology & Behavioural Science</h2>
-    <p class="section-body">We're starting with the field that needs this most. The replication crisis made psychology research the most publicly scrutinised discipline in science. Annotia gives that scrutiny a proper home — structured, sourced, and searchable. More fields coming soon.</p>
-
-    <div class="fields-list">
-      <span class="field-tag featured">✓ Psychology & Behavioural Science</span>
-      <span class="field-tag">Neuroscience — Coming Soon</span>
-      <span class="field-tag">Nutrition & Public Health — Coming Soon</span>
-      <span class="field-tag">Economics — Coming Soon</span>
-      <span class="field-tag">AI & Machine Learning — Coming Soon</span>
-      <span class="field-tag">Education Research — Coming Soon</span>
-      <span class="field-tag">Climate Science — Coming Soon</span>
-    </div>
-  </div>
-</section>
-
-<!-- MANIFESTO -->
-<section class="manifesto">
-  <div class="manifesto-quote fade-up">
-    "The goal of science is not to produce papers. It is to produce <em>knowledge</em>. Annotia exists to close the gap between the two."
-  </div>
-  <div class="manifesto-attribution">The Annotia Manifesto · 2026</div>
-</section>
-
-<!-- TRUST -->
-<section style="padding-top:0">
-  <div class="section-inner">
-    <div class="section-eyebrow">Our Commitments</div>
-    <h2 class="section-title">Built on trust.<br>Transparent by design.</h2>
-
-    <div class="trust-grid">
-      <div class="trust-item fade-up">
-        <div class="trust-dot gold"></div>
-        <div>
-          <div class="trust-item-title">AI is always labelled</div>
-          <div class="trust-item-text">Every AI-generated summary is clearly marked. We never let machine output masquerade as human expertise. Every summary can be flagged and corrected.</div>
-        </div>
-      </div>
-
-      <div class="trust-item fade-up fade-up-delay-1">
-        <div class="trust-dot teal"></div>
-        <div>
-          <div class="trust-item-title">Open access only</div>
-          <div class="trust-item-text">We will never host or link to paywalled content. Every paper on Annotia is legally freely available. Full stop.</div>
-        </div>
-      </div>
-
-      <div class="trust-item fade-up fade-up-delay-2">
-        <div class="trust-dot green"></div>
-        <div>
-          <div class="trust-item-title">Sources are mandatory</div>
-          <div class="trust-item-text">Disputed claims in comments must cite a source. Opinion is welcome. Unsupported assertion of fact is not.</div>
-        </div>
-      </div>
-
-      <div class="trust-item fade-up fade-up-delay-3">
-        <div class="trust-dot preprint"></div>
-        <div>
-          <div class="trust-item-title">Preprints are always flagged</div>
-          <div class="trust-item-text">No paper that has not been peer reviewed will ever appear without a prominent, unmissable warning. Clarity is non-negotiable.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section" id="cta">
-  <div class="section-inner" style="position:relative;z-index:1">
-    <h2 class="cta-title fade-up">Be part of the <em>founding community</em></h2>
-    <p class="cta-sub fade-up fade-up-delay-1">Join the waitlist today. Founding members get 12 months of Pro free, a founding member badge, and direct input into what we build first.</p>
-
-    <div class="cta-form fade-up fade-up-delay-2">
-      <input class="cta-input" type="email" placeholder="your@email.com" id="ctaEmail" />
-      <button class="cta-btn" onclick="joinWaitlist('ctaEmail')">Join Waitlist</button>
+    <!-- Abstract -->
+    <div class="abstract">
+      <div class="abstract-label">Abstract</div>
+      <div class="abstract-text" id="abstractText"></div>
     </div>
 
-    <div class="cta-note fade-up fade-up-delay-3">Free forever for core features · No spam · Unsubscribe anytime</div>
   </div>
-</section>
+</div>
 
-<!-- FOOTER -->
 <footer>
-  <div class="footer-inner">
-    <div class="footer-logo">Anno<span>tia</span></div>
-    <div class="footer-text">© 2026 Annotia · Open Science for Everyone</div>
-    <div class="footer-links">
-      <a href="#">About</a>
-      <a href="#">Manifesto</a>
-      <a href="#">Contact</a>
-      <a href="#">Privacy</a>
-    </div>
+  <div class="footer-text">
+    <a href="/">Annotia</a> · Open Science for Everyone · AI summaries powered by Claude · <a href="/">Join the waitlist</a>
   </div>
 </footer>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-  // Scroll animations
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1 });
+  function loadDoi(doi) {
+    document.getElementById('doiInput').value = doi;
+    document.getElementById('doiInput').focus();
+  }
 
-  document.querySelectorAll('.fade-up').forEach(el => {
-    observer.observe(el);
-    // Trigger hero immediately
-    if (el.closest('.hero')) el.classList.add('visible');
+  function setStep(n) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('step' + i);
+      if (i < n) el.className = 'loading-step done';
+      else if (i === n) el.className = 'loading-step active';
+      else el.className = 'loading-step';
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById('loadingState').classList.remove('visible');
+    const card = document.getElementById('errorCard');
+    card.classList.add('visible');
+    document.getElementById('errorText').textContent = msg;
+    document.getElementById('generateBtn').disabled = false;
+    document.getElementById('generateBtn').textContent = 'Summarise';
+  }
+
+  function resetApp() {
+    document.getElementById('searchSection').style.display = 'block';
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('errorCard').classList.remove('visible');
+    document.getElementById('paperResult').classList.remove('visible');
+    document.getElementById('generateBtn').disabled = false;
+    document.getElementById('generateBtn').textContent = 'Summarise';
+    window.scrollTo(0, 0);
+  }
+
+  // Allow Enter key
+  document.getElementById('doiInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') generateSummary();
   });
 
-  function joinWaitlist(inputId) {
-    const input = document.getElementById(inputId);
-    const email = input.value.trim();
-    if (!email || !email.includes('@')) {
-      showToast('Please enter a valid email address');
+  async function generateSummary() {
+    const doi = document.getElementById('doiInput').value.trim();
+    if (!doi) { showToast('Please enter a DOI'); return; }
+
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('generateBtn').textContent = 'Working...';
+    document.getElementById('errorCard').classList.remove('visible');
+    document.getElementById('loadingState').classList.add('visible');
+    setStep(1);
+
+    // Fetch metadata from CrossRef
+    let paperData;
+    try {
+      const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`);
+      if (!res.ok) throw new Error('DOI not found. Please check and try again.');
+      const data = await res.json();
+      paperData = data.message;
+    } catch (e) {
+      showError('Could not fetch paper: ' + e.message);
       return;
     }
-    input.value = '';
-    showToast('✓ You\'re on the list — we\'ll be in touch soon');
+
+    setStep(2);
+
+    // Extract metadata
+    const title = paperData.title?.[0] || 'Unknown Title';
+    const authorList = paperData.author || [];
+    let authors = 'Unknown Authors';
+    if (authorList.length > 0) {
+      const parsed = authorList.map(a => a.name || `${a.given || ''} ${a.family || ''}`.trim()).filter(Boolean);
+      if (parsed.length > 0) authors = parsed.length > 6 ? parsed.slice(0,3).join(', ') + ' et al.' : parsed.join(', ');
+    }
+    if (authors === 'Unknown Authors' && paperData.editor?.length > 0) {
+      authors = paperData.editor.map(e => `${e.given || ''} ${e.family || ''}`.trim()).filter(Boolean).join(', ') + ' (Eds.)';
+    }
+
+    const journal = paperData['container-title']?.[0] || paperData.publisher || 'Unknown Journal';
+    const year = paperData.published?.['date-parts']?.[0]?.[0] || paperData['published-print']?.['date-parts']?.[0]?.[0] || 'Unknown Year';
+    const abstract = paperData.abstract ? paperData.abstract.replace(/<[^>]*>/g, '') : 'Abstract not available.';
+    const type = paperData.type || 'journal-article';
+    const subject = paperData.subject?.[0] || '';
+    const licenses = paperData.license || [];
+    const isPreprint = type.includes('posted') || ['arxiv','biorxiv','medrxiv','psyarxiv'].some(s => journal.toLowerCase().includes(s));
+    const isOpenAccess = isPreprint || licenses.some(l => l.URL && l.URL.includes('creativecommons')) || ['plos','peerj','frontiers','elife','bmj open','f1000'].some(s => journal.toLowerCase().includes(s));
+    const hasAbstract = abstract && abstract !== 'Abstract not available.' && abstract.length > 50;
+
+    setStep(3);
+
+    // Call our serverless API — no API key needed in browser
+    let summaryData;
+    try {
+      const response = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doi,
+          metadata: { title, authors, journal, year, abstract }
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Summary generation failed');
+      }
+
+      const result = await response.json();
+      summaryData = result.summaryData;
+
+    } catch (e) {
+      showError('Could not generate summary: ' + e.message);
+      return;
+    }
+
+    setStep(4);
+
+    setTimeout(() => {
+      renderPaper({ title, authors, journal, year, doi, abstract, isPreprint, isOpenAccess, hasAbstract, subject, summaryData });
+    }, 300);
+  }
+
+  function renderPaper({ title, authors, journal, year, doi, abstract, isPreprint, isOpenAccess, hasAbstract, subject, summaryData }) {
+    // Status badges
+    const statusRow = document.getElementById('statusRow');
+    statusRow.innerHTML = '';
+    statusRow.innerHTML += isPreprint
+      ? '<span class="status-badge badge-preprint">⚠ Preprint</span>'
+      : '<span class="status-badge badge-peer">✓ Peer Reviewed</span>';
+    if (subject) statusRow.innerHTML += `<span class="status-badge badge-field">${subject}</span>`;
+    statusRow.innerHTML += isOpenAccess
+      ? '<span class="status-badge badge-open">Open Access</span>'
+      : '<span class="status-badge badge-paywall">⚿ Subscription Required</span>';
+    if (!hasAbstract) statusRow.innerHTML += '<span class="status-badge badge-warn">Limited Abstract</span>';
+    statusRow.innerHTML += '<span class="status-badge badge-ai">✦ AI Summary</span>';
+
+    // Warnings
+    document.getElementById('preprintWarning').style.display = isPreprint ? 'flex' : 'none';
+    document.getElementById('paywallNotice').style.display = (!isOpenAccess && !isPreprint) ? 'flex' : 'none';
+
+    // Paper details
+    document.getElementById('paperTitle').textContent = title;
+    document.getElementById('paperAuthors').textContent = authors;
+    document.getElementById('paperMeta').innerHTML = `
+      <div class="meta-item">📄 <strong>${journal}</strong></div>
+      <div class="meta-item">📅 <strong>${year}</strong></div>
+      <div class="meta-item">🔗 <strong>${doi}</strong></div>
+    `;
+
+    // Abstract
+    const abstractEl = document.getElementById('abstractText');
+    if (!hasAbstract) {
+      abstractEl.textContent = 'Full abstract not available via CrossRef. The AI summary was generated from available metadata and may be less detailed than usual.';
+      abstractEl.style.color = 'var(--preprint)';
+    } else {
+      abstractEl.textContent = abstract;
+      abstractEl.style.color = '';
+    }
+
+    // Summary content
+    document.getElementById('whatStudied').textContent = summaryData.whatStudied || '';
+    document.getElementById('howStudied').textContent = summaryData.howStudied || '';
+    document.getElementById('whatFound').textContent = summaryData.whatFound || '';
+    document.getElementById('confidence').textContent = summaryData.confidence || '';
+    document.getElementById('realWorld').textContent = summaryData.realWorld || '';
+    document.getElementById('whyCare').textContent = summaryData.whyCare || '';
+
+    // Jargon
+    const jargonContainer = document.getElementById('jargonContent');
+    jargonContainer.innerHTML = '';
+    (summaryData.jargonTerms || []).forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'jargon-term';
+      div.innerHTML = `<strong>${item.term}</strong><span>${item.definition}</span>`;
+      jargonContainer.appendChild(div);
+    });
+    if (!summaryData.jargonTerms?.length) {
+      jargonContainer.innerHTML = '<div style="font-size:0.85rem;color:var(--text-dim)">No technical terms identified.</div>';
+    }
+
+    // Reset tabs
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelector('.tab').classList.add('active');
+    document.getElementById('tab-summary').classList.add('active');
+
+    // Show result
+    document.getElementById('searchSection').style.display = 'none';
+    document.getElementById('loadingState').classList.remove('visible');
+    document.getElementById('paperResult').classList.add('visible');
+    window.scrollTo(0, 0);
+  }
+
+  function switchTab(btn, id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
   }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3200);
+    setTimeout(() => t.classList.remove('show'), 3000);
   }
-
-  // Smooth parallax on hero
-  window.addEventListener('scroll', () => {
-    const hero = document.querySelector('.hero');
-    if (hero) {
-      const scroll = window.pageYOffset;
-      hero.style.transform = `translateY(${scroll * 0.15}px)`;
-    }
-  });
 </script>
 </body>
 </html>
