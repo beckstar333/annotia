@@ -1062,18 +1062,48 @@
     if (el.closest('.hero')) el.classList.add('visible');
   });
 
-  function joinWaitlist(inputId) {
+  async function joinWaitlist(inputId) {
     const input = document.getElementById(inputId);
     const email = input.value.trim();
     if (!email || !email.includes('@')) {
       showToast('Please enter a valid email address');
       return;
     }
-    // Redirect to Beehiiv subscribe page with email pre-filled
-    const beehiivUrl = 'https://beckys-newsletter-a919c2.beehiiv.com/subscribe?email=' + encodeURIComponent(email);
-    window.open(beehiivUrl, '_blank');
-    input.value = '';
-    showToast('✓ Taking you to confirm your subscription...');
+
+    // Disable all waitlist buttons while submitting
+    document.querySelectorAll('.waitlist-btn, .cta-btn').forEach(b => {
+      b.disabled = true;
+      b.textContent = 'Joining...';
+    });
+
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        input.value = '';
+        if (data.message === 'already_subscribed') {
+          showToast('✓ You\'re already on the list — thank you!');
+        } else {
+          showToast('✓ You\'re on the list — check your email to confirm!');
+        }
+      } else {
+        showToast('Something went wrong — please try again');
+      }
+    } catch (e) {
+      showToast('Something went wrong — please try again');
+    }
+
+    // Re-enable buttons
+    document.querySelectorAll('.waitlist-btn, .cta-btn').forEach(b => {
+      b.disabled = false;
+      b.textContent = 'Join Waitlist';
+    });
   }
 
   function showToast(msg) {
