@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Annotia — Working Demo</title>
+<title>Annotia — AI-Powered Research Summaries</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -14,18 +15,18 @@
     --border: #3a4d70;
     --border-light: #4a5f85;
     --gold: #d4b05a;
-    --gold-dim: rgba(201,168,76,0.15);
+    --gold-dim: rgba(212,176,90,0.18);
     --teal: #5ab4c8;
-    --teal-dim: rgba(74,158,173,0.15);
+    --teal-dim: rgba(90,180,200,0.18);
     --red: #d06060;
-    --red-dim: rgba(192,80,74,0.15);
+    --red-dim: rgba(208,96,96,0.18);
     --green: #5ab882;
-    --green-dim: rgba(74,158,110,0.15);
+    --green-dim: rgba(90,184,130,0.18);
     --text: #f0ece4;
     --text-dim: #a0adc8;
     --text-muted: #6a7a96;
     --preprint: #e09050;
-    --preprint-dim: rgba(212,132,58,0.15);
+    --preprint-dim: rgba(224,144,80,0.18);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -45,109 +46,130 @@
   }
   .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; color: var(--text); text-decoration: none; }
   .logo span { color: var(--gold); }
-  .demo-badge {
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+  .header-tag {
     font-family: 'DM Mono', monospace; font-size: 0.62rem;
-    padding: 0.2rem 0.6rem; background: var(--gold-dim);
-    border: 1px solid rgba(201,168,76,0.3); color: var(--gold);
-    border-radius: 2px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); letter-spacing: 0.08em;
+  }
+  .header-link {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    color: var(--gold); text-decoration: none; letter-spacing: 0.06em;
+    padding: 0.3rem 0.8rem; border: 1px solid rgba(212,176,90,0.3);
+    border-radius: 2px; transition: all 0.2s;
+  }
+  .header-link:hover { background: var(--gold-dim); }
+
+  /* HERO SEARCH */
+  .hero {
+    max-width: 700px; margin: 4rem auto 2rem; padding: 0 2rem;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--gold); margin-bottom: 1rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  }
+  .eyebrow-line { width: 24px; height: 1px; background: var(--gold); opacity: 0.5; }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif; font-size: 2.6rem;
+    font-weight: 600; line-height: 1.2; color: var(--text);
+    margin-bottom: 0.75rem; letter-spacing: -0.01em;
+  }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-sub {
+    font-size: 0.95rem; color: var(--text-dim); margin-bottom: 2rem;
+    line-height: 1.7; font-weight: 300;
   }
 
-  /* SETUP PANEL */
-  .setup-panel {
-    max-width: 700px; margin: 3rem auto; padding: 0 2rem;
-  }
-  .setup-card {
+  /* SEARCH BOX */
+  .search-box {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 4px; padding: 2rem;
+    border-radius: 4px; padding: 1.5rem; margin-bottom: 1rem;
+    transition: border-color 0.2s;
   }
-  .setup-title {
-    font-family: 'Cormorant Garamond', serif; font-size: 1.6rem;
-    font-weight: 600; color: var(--text); margin-bottom: 0.5rem;
-  }
-  .setup-sub {
-    font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1.5rem; line-height: 1.6;
-  }
-  .form-label {
+  .search-box:focus-within { border-color: var(--gold); }
+  .search-label {
     font-family: 'DM Mono', monospace; font-size: 0.65rem;
     text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--text-muted); display: block; margin-bottom: 0.4rem;
+    color: var(--text-muted); display: block; margin-bottom: 0.5rem;
+    text-align: left;
   }
-  .form-input {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.8rem;
-    padding: 0.6rem 0.8rem; border-radius: 2px; outline: none;
-    transition: border-color 0.2s; margin-bottom: 1rem;
+  .search-row { display: flex; gap: 0.5rem; }
+  .search-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.85rem;
+    padding: 0.7rem 1rem; border-radius: 2px; outline: none;
+    transition: border-color 0.2s;
   }
-  .form-input:focus { border-color: var(--gold); }
-  .form-input::placeholder { color: var(--text-muted); }
-
-  .doi-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-  .doi-row .form-input { margin-bottom: 0; flex: 1; }
-
-  .btn-primary {
+  .search-input:focus { border-color: var(--gold); }
+  .search-input::placeholder { color: var(--text-muted); }
+  .btn-search {
     font-family: 'DM Mono', monospace; font-size: 0.72rem;
-    padding: 0.6rem 1.5rem; background: var(--gold); border: none;
+    padding: 0.7rem 1.5rem; background: var(--gold); border: none;
     color: var(--bg); cursor: pointer; letter-spacing: 0.08em;
     text-transform: uppercase; font-weight: 500; border-radius: 2px;
     transition: all 0.2s; white-space: nowrap;
   }
-  .btn-primary:hover { background: #e0bc60; }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .key-note {
-    font-family: 'DM Mono', monospace; font-size: 0.62rem;
-    color: var(--text-muted); line-height: 1.6; letter-spacing: 0.03em;
-  }
-  .key-note span { color: var(--preprint); }
+  .btn-search:hover { background: #e0c060; }
+  .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* EXAMPLE DOIS */
-  .example-dois {
-    margin-top: 1.25rem; padding-top: 1.25rem;
-    border-top: 1px solid var(--border);
+  .examples {
+    text-align: left; margin-top: 1rem;
+    padding-top: 1rem; border-top: 1px solid var(--border);
   }
-  .example-label {
-    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+  .examples-label {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
     text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--text-muted); margin-bottom: 0.6rem;
+    color: var(--text-muted); margin-bottom: 0.5rem;
   }
   .doi-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .doi-chip {
-    font-family: 'DM Mono', monospace; font-size: 0.62rem;
-    padding: 0.25rem 0.6rem; background: var(--surface2);
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    padding: 0.2rem 0.5rem; background: var(--surface2);
     border: 1px solid var(--border); color: var(--text-dim);
     border-radius: 2px; cursor: pointer; transition: all 0.2s;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
   }
   .doi-chip:hover { border-color: var(--gold); color: var(--gold); }
 
   /* LOADING */
-  .loading-state {
-    max-width: 700px; margin: 3rem auto; padding: 0 2rem;
-    text-align: center; display: none;
-  }
+  .loading-state { text-align: center; padding: 3rem 2rem; display: none; }
   .loading-state.visible { display: block; }
   .spinner {
-    width: 40px; height: 40px; border: 2px solid var(--border);
+    width: 36px; height: 36px; border: 2px solid var(--border);
     border-top-color: var(--gold); border-radius: 50%;
     animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-step {
-    font-family: 'DM Mono', monospace; font-size: 0.72rem;
-    color: var(--text-dim); letter-spacing: 0.05em;
-    margin-bottom: 0.4rem;
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 0.35rem;
   }
   .loading-step.active { color: var(--gold); }
   .loading-step.done { color: var(--green); }
 
+  /* ERROR */
+  .error-card {
+    background: var(--red-dim); border: 1px solid rgba(208,96,96,0.3);
+    border-radius: 4px; padding: 1.25rem; margin: 1rem 0;
+    display: none;
+  }
+  .error-card.visible { display: block; }
+  .error-title {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--red); text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+  .error-text { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+
   /* PAPER RESULT */
   .paper-result {
-    max-width: 1100px; margin: 2rem auto; padding: 0 2rem 4rem;
+    max-width: 1100px; margin: 0 auto; padding: 0 2rem 4rem;
     display: none;
   }
   .paper-result.visible { display: block; }
-
-  /* Back button */
   .back-btn {
     font-family: 'DM Mono', monospace; font-size: 0.68rem;
     color: var(--text-muted); background: none; border: none;
@@ -158,17 +180,19 @@
   .back-btn:hover { color: var(--gold); }
 
   /* Status badges */
-  .status-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .status-row { display: flex; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
   .status-badge {
-    font-family: 'DM Mono', monospace; font-size: 0.62rem;
-    padding: 0.25rem 0.6rem; border-radius: 2px;
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    padding: 0.2rem 0.55rem; border-radius: 2px;
     letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
   }
-  .badge-preprint { background: var(--preprint-dim); color: var(--preprint); border: 1px solid rgba(212,132,58,0.3); }
-  .badge-peer { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,158,110,0.3); }
-  .badge-field { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(74,158,173,0.3); }
-  .badge-open { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,158,110,0.3); }
-  .badge-ai { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+  .badge-preprint { background: var(--preprint-dim); color: var(--preprint); border: 1px solid rgba(224,144,80,0.3); }
+  .badge-peer { background: var(--green-dim); color: var(--green); border: 1px solid rgba(90,184,130,0.3); }
+  .badge-field { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(90,180,200,0.3); }
+  .badge-open { background: var(--green-dim); color: var(--green); border: 1px solid rgba(90,184,130,0.3); }
+  .badge-paywall { background: rgba(160,100,60,0.15); color: #c8885a; border: 1px solid rgba(160,100,60,0.3); }
+  .badge-ai { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(212,176,90,0.3); }
+  .badge-warn { background: var(--red-dim); color: var(--red); border: 1px solid rgba(208,96,96,0.3); }
 
   .paper-title {
     font-family: 'Cormorant Garamond', serif; font-size: 1.9rem;
@@ -176,13 +200,35 @@
     margin-bottom: 0.75rem; letter-spacing: -0.01em;
   }
   .paper-authors { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.5rem; line-height: 1.6; }
-  .paper-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .paper-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
   .meta-item {
-    font-family: 'DM Mono', monospace; font-size: 0.65rem;
-    color: var(--text-muted); letter-spacing: 0.05em;
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    color: var(--text-muted); letter-spacing: 0.04em;
   }
   .meta-item strong { color: var(--text-dim); font-weight: 500; }
   .paper-divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+  /* Preprint warning */
+  .preprint-warning {
+    background: var(--preprint-dim); border: 1px solid rgba(224,144,80,0.35);
+    border-radius: 4px; padding: 0.875rem 1rem; margin-bottom: 1.5rem;
+    display: flex; gap: 0.75rem; align-items: flex-start;
+  }
+  .warning-text {
+    font-family: 'DM Mono', monospace; font-size: 0.67rem;
+    color: var(--preprint); line-height: 1.6; letter-spacing: 0.02em;
+  }
+
+  /* Paywall notice */
+  .paywall-notice {
+    background: rgba(160,100,60,0.12); border: 1px solid rgba(160,100,60,0.3);
+    border-radius: 4px; padding: 0.875rem 1rem; margin-bottom: 1.5rem;
+    display: flex; gap: 0.75rem; align-items: flex-start;
+  }
+  .paywall-text {
+    font-family: 'DM Mono', monospace; font-size: 0.67rem;
+    color: #c8885a; line-height: 1.6; letter-spacing: 0.02em;
+  }
 
   /* AI Summary */
   .ai-summary {
@@ -197,7 +243,7 @@
   .ai-title { display: flex; align-items: center; gap: 0.6rem; }
   .ai-icon {
     width: 20px; height: 20px; background: var(--gold-dim);
-    border: 1px solid rgba(201,168,76,0.3); border-radius: 50%;
+    border: 1px solid rgba(212,176,90,0.3); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.6rem; color: var(--gold); flex-shrink: 0;
   }
@@ -225,7 +271,6 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  /* Summary sections */
   .summary-section { margin-bottom: 1.25rem; }
   .summary-section:last-child { margin-bottom: 0; }
   .section-label {
@@ -234,17 +279,14 @@
     color: var(--gold); margin-bottom: 0.5rem;
   }
   .section-text { font-size: 0.88rem; line-height: 1.8; color: var(--text); }
-  .section-text p { margin-bottom: 0.75rem; }
-  .section-text p:last-child { margin-bottom: 0; }
 
-  /* Jargon terms */
   .jargon-term {
-    display: inline-block; background: var(--surface2);
+    display: block; background: var(--surface2);
     border: 1px solid var(--border); border-radius: 2px;
-    padding: 0.6rem 1rem; margin: 0.4rem 0; width: 100%;
+    padding: 0.6rem 1rem; margin-bottom: 0.5rem;
   }
   .jargon-term strong {
-    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
     color: var(--teal); font-weight: 500; display: block; margin-bottom: 0.3rem;
   }
   .jargon-term span { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
@@ -274,19 +316,6 @@
     line-height: 1.8; color: var(--text-dim); font-style: italic;
   }
 
-  /* Error */
-  .error-card {
-    background: var(--red-dim); border: 1px solid rgba(192,80,74,0.3);
-    border-radius: 4px; padding: 1.25rem; margin: 2rem auto;
-    max-width: 700px;
-  }
-  .error-title {
-    font-family: 'DM Mono', monospace; font-size: 0.72rem;
-    color: var(--red); text-transform: uppercase; letter-spacing: 0.08em;
-    margin-bottom: 0.5rem;
-  }
-  .error-text { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
-
   /* Toast */
   .toast {
     position: fixed; bottom: 2rem; left: 50%;
@@ -298,210 +327,189 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* Preprint warning */
-  .preprint-warning {
-    background: var(--preprint-dim); border: 1px solid rgba(212,132,58,0.35);
-    border-radius: 4px; padding: 0.875rem 1rem; margin-bottom: 1.5rem;
-    display: flex; gap: 0.75rem; align-items: flex-start;
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border); padding: 1.5rem 2rem;
+    text-align: center; margin-top: 4rem;
   }
-  .warning-text {
-    font-family: 'DM Mono', monospace; font-size: 0.68rem;
-    color: var(--preprint); line-height: 1.6; letter-spacing: 0.02em;
+  .footer-text {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    color: var(--text-muted); letter-spacing: 0.08em;
   }
-  .warning-text strong { font-weight: 500; }
-
-  /* AUTH MODAL */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-    z-index: 1000; display: none; align-items: center; justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-  .modal-overlay.visible { display: flex; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border-light);
-    border-radius: 6px; padding: 2rem; width: 100%; max-width: 420px;
-    margin: 1rem; animation: modalIn 0.2s ease; position: relative;
-  }
-  @keyframes modalIn {
-    from { opacity: 0; transform: translateY(-16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .modal-title { font-family: "Cormorant Garamond", serif; font-size: 1.6rem; font-weight: 600; color: var(--text); margin-bottom: 0.3rem; }
-  .modal-sub { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1.5rem; line-height: 1.6; }
-  .modal-label { font-family: "DM Mono", monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: block; margin-bottom: 0.35rem; }
-  .modal-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: "DM Sans", sans-serif; font-size: 0.88rem; padding: 0.65rem 0.9rem; border-radius: 2px; outline: none; transition: border-color 0.2s; margin-bottom: 1rem; }
-  .modal-input:focus { border-color: var(--gold); }
-  .modal-input::placeholder { color: var(--text-muted); }
-  .modal-select { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: "DM Sans", sans-serif; font-size: 0.88rem; padding: 0.65rem 0.9rem; border-radius: 2px; outline: none; margin-bottom: 1rem; cursor: pointer; }
-  .btn-modal-primary { width: 100%; font-family: "DM Mono", monospace; font-size: 0.75rem; padding: 0.75rem; background: var(--gold); border: none; color: var(--bg); cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; border-radius: 2px; transition: all 0.2s; margin-bottom: 0.75rem; }
-  .btn-modal-primary:hover { background: #e0c060; }
-  .btn-modal-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  .modal-switch { font-size: 0.82rem; color: var(--text-dim); text-align: center; }
-  .modal-switch a { color: var(--gold); cursor: pointer; }
-  .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; }
-  .modal-error { background: var(--red-dim); border: 1px solid rgba(208,96,96,0.3); border-radius: 2px; padding: 0.6rem 0.8rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--red); display: none; }
-  .modal-error.visible { display: block; }
-  .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-dim); border: 1px solid rgba(212,176,90,0.4); display: flex; align-items: center; justify-content: center; font-family: "DM Mono", monospace; font-size: 0.7rem; color: var(--gold); cursor: pointer; transition: all 0.2s; font-weight: 500; }
-  .user-avatar:hover { background: var(--gold); color: var(--bg); }
-  .user-dropdown { position: relative; }
-  .user-menu { position: absolute; top: calc(100% + 8px); right: 0; background: var(--surface); border: 1px solid var(--border-light); border-radius: 4px; min-width: 180px; z-index: 200; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.3); overflow: hidden; }
-  .user-menu.visible { display: block; }
-  .user-menu-name { padding: 0.75rem 1rem; font-size: 0.82rem; color: var(--text); border-bottom: 1px solid var(--border); font-weight: 500; }
-  .user-menu-email { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; font-family: "DM Mono", monospace; }
-  .user-menu-item { padding: 0.65rem 1rem; font-family: "DM Mono", monospace; font-size: 0.7rem; color: var(--text-dim); cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em; display: block; text-decoration: none; }
-  .user-menu-item:hover { background: var(--surface2); color: var(--text); }
-  .save-btn { font-family: "DM Mono", monospace; font-size: 0.72rem; padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-light); color: var(--text-dim); cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; border-radius: 2px; display: inline-flex; align-items: center; gap: 0.4rem; }
-  .save-btn:hover { border-color: var(--gold); color: var(--gold); }
-  .save-btn.saved { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
-  .auth-prompt { background: var(--gold-dim); border: 1px solid rgba(212,176,90,0.3); border-radius: 4px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-  .auth-prompt-text { font-family: "DM Mono", monospace; font-size: 0.7rem; color: var(--gold); letter-spacing: 0.04em; }
-  .auth-prompt-btn { font-family: "DM Mono", monospace; font-size: 0.68rem; padding: 0.3rem 0.8rem; background: var(--gold); border: none; color: var(--bg); cursor: pointer; border-radius: 2px; white-space: nowrap; font-weight: 500; }
+  .footer-text a { color: var(--gold); text-decoration: none; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <a href="#" class="logo" onclick="resetApp()">Anno<span>tia</span></a>
-    <span class="demo-badge">Working Demo</span>
-  </div>
-</header>
-
-<!-- SETUP PANEL -->
-<div class="setup-panel" id="setupPanel">
-  <div class="setup-card">
-    <div class="setup-title">Generate a Real AI Summary</div>
-    <div class="setup-sub">Enter your Anthropic API key and any open-access paper DOI. Annotia will fetch the real paper metadata and generate a structured three-layer AI summary using Claude.</div>
-
-    <label class="form-label">Your Anthropic API Key</label>
-    <input class="form-input" type="password" id="apiKey" placeholder="sk-ant-..." />
-    <div class="key-note" style="margin-bottom:1.25rem">
-      <span>⚠ Demo only:</span> Your key is stored in this page's memory and never sent anywhere except directly to Anthropic's API. For production use, keys should live on a server.
-    </div>
-
-    <label class="form-label">Paper DOI</label>
-    <div class="doi-row">
-      <input class="form-input" type="text" id="doiInput" placeholder="e.g. 10.1371/journal.pmed.1001482" />
-      <button class="btn-primary" onclick="generateSummary()" id="generateBtn">Generate Summary</button>
-    </div>
-
-    <div class="example-dois">
-      <div class="example-label">Try an example — click to load</div>
-      <div class="doi-chips">
-        <span class="doi-chip" onclick="loadDoi('10.1371/journal.pmed.1001482')">10.1371/journal.pmed.1001482 — PLOS Medicine</span>
-        <span class="doi-chip" onclick="loadDoi('10.1371/journal.pbio.1002165')">10.1371/journal.pbio.1002165 — PLOS Biology</span>
-        <span class="doi-chip" onclick="loadDoi('10.1038/s41562-018-0399-z')">10.1038/s41562-018-0399-z — Nature Human Behaviour</span>
-        <span class="doi-chip" onclick="loadDoi('10.1126/science.aac4716')">10.1126/science.aac4716 — Reproducibility Project</span>
-        <span class="doi-chip" onclick="loadDoi('10.1371/journal.pone.0220172')">10.1371/journal.pone.0220172 — PLOS ONE</span>
+    <a href="/" class="logo" onclick="resetApp(); return false;">Anno<span>tia</span></a>
+    <div class="header-right">
+      <span class="header-tag">AI Summary Demo</span>
+      <a href="/" class="header-link">Back to Annotia</a>
+      <div id="authButtons" style="display:flex;gap:0.5rem;align-items:center;">
+        <button id="loginBtn" style="cursor:pointer;background:none;border:1px solid var(--border-light);color:var(--text-dim);padding:0.3rem 0.8rem;font-family:'DM Mono',monospace;font-size:0.65rem;border-radius:2px;">Log in</button>
+        <button id="signupBtn" style="cursor:pointer;background:var(--gold);border:1px solid var(--gold);color:var(--bg);padding:0.3rem 0.8rem;font-family:'DM Mono',monospace;font-size:0.65rem;border-radius:2px;font-weight:500;">Sign up</button>
+      </div>
+      <div id="userMenuSection" style="display:none;position:relative;">
+        <div id="userAvatar" style="width:32px;height:32px;border-radius:50%;background:var(--gold-dim);border:1px solid rgba(212,176,90,0.4);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--gold);cursor:pointer;font-weight:500;">?</div>
+        <div id="userMenuDropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border-light);border-radius:4px;min-width:180px;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,0.3);overflow:hidden;">
+          <div style="padding:0.75rem 1rem;font-size:0.82rem;color:var(--text);border-bottom:1px solid var(--border);"><div id="userMenuName">User</div><div id="userMenuEmail" style="font-size:0.68rem;color:var(--text-muted);font-family:'DM Mono',monospace;"></div></div>
+          <a id="signOutBtn" style="padding:0.65rem 1rem;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-dim);cursor:pointer;display:block;">Sign out</a>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</header>
 
-<!-- LOADING -->
-<div class="loading-state" id="loadingState">
-  <div class="spinner"></div>
-  <div class="loading-step" id="step1">① Fetching paper metadata from CrossRef...</div>
-  <div class="loading-step" id="step2">② Sending paper to Claude for analysis...</div>
-  <div class="loading-step" id="step3">③ Generating structured summary...</div>
-  <div class="loading-step" id="step4">④ Formatting your paper page...</div>
-</div>
+<!-- SEARCH HERO -->
+<div id="searchSection">
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-line"></div>
+      Open Science · AI Summaries · Community Verified
+      <div class="eyebrow-line"></div>
+    </div>
+    <h1 class="hero-title">Research made <em>readable</em></h1>
+    <p class="hero-sub">Paste any paper DOI to get an instant AI-powered plain language summary — what they studied, what they found, and what it means for the real world.</p>
 
-<!-- ERROR -->
-<div id="errorState" style="display:none; padding: 0 2rem;">
-  <div class="error-card">
-    <div class="error-title">⚠ Something went wrong</div>
-    <div class="error-text" id="errorText"></div>
-    <button class="btn-primary" style="margin-top:1rem" onclick="resetApp()">Try Again</button>
+    <div class="search-box">
+      <label class="search-label">Paper DOI</label>
+      <div class="search-row">
+        <input class="search-input" type="text" id="doiInput" placeholder="e.g. 10.1371/journal.pmed.1001482" />
+        <button class="btn-search" onclick="generateSummary()" id="generateBtn">Summarise</button>
+      </div>
+      <div class="examples">
+        <div class="examples-label">Try an example</div>
+        <div class="doi-chips">
+          <span class="doi-chip" onclick="loadDoi('10.1126/science.aac4716')">Reproducibility Project — Science 2015</span>
+          <span class="doi-chip" onclick="loadDoi('10.1371/journal.pmed.1001482')">PLOS Medicine</span>
+          <span class="doi-chip" onclick="loadDoi('10.1371/journal.pbio.1002165')">PLOS Biology</span>
+          <span class="doi-chip" onclick="loadDoi('10.1038/s41562-018-0399-z')">Nature Human Behaviour</span>
+          <span class="doi-chip" onclick="loadDoi('10.1371/journal.pone.0220172')">PLOS ONE</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-card" id="errorCard">
+      <div class="error-title">⚠ Something went wrong</div>
+      <div class="error-text" id="errorText"></div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <div class="loading-step" id="step1">① Fetching paper metadata...</div>
+    <div class="loading-step" id="step2">② Sending to Claude for analysis...</div>
+    <div class="loading-step" id="step3">③ Generating structured summary...</div>
+    <div class="loading-step" id="step4">④ Preparing your paper page...</div>
   </div>
 </div>
 
 <!-- PAPER RESULT -->
 <div class="paper-result" id="paperResult">
-  <button class="back-btn" onclick="resetApp()">← Try another paper</button>
-
-  <div id="preprintWarning" class="preprint-warning" style="display:none">
-    <div>⚠</div>
-    <div class="warning-text">
-      <strong>This paper has not been peer reviewed.</strong> Claims should be treated as preliminary and have not been independently verified by journal reviewers.
-    </div>
+  <div style="max-width:1100px; margin:0 auto; padding: 1.5rem 2rem 0;">
+    <button class="back-btn" onclick="resetApp()">← Summarise another paper</button>
   </div>
 
-  <div class="status-row" id="statusRow"></div>
-  <h1 class="paper-title" id="paperTitle"></h1>
-  <div class="paper-authors" id="paperAuthors"></div>
-  <div class="paper-meta" id="paperMeta"></div>
-  <div class="paper-divider"></div>
+  <div style="max-width:1100px; margin:0 auto; padding: 0 2rem;">
 
-  <!-- AI Summary -->
-  <div class="ai-summary">
-    <div class="ai-header">
-      <div class="ai-title">
-        <div class="ai-icon">✦</div>
-        <span class="ai-label">Annotia AI Summary — Generated by Claude</span>
-      </div>
-      <div class="ai-disclaimer">AI-generated · Always verify against source</div>
-    </div>
-    <div class="ai-body">
-      <div class="summary-tabs">
-        <button class="tab active" onclick="switchTab(this, 'summary')">Summary</button>
-        <button class="tab" onclick="switchTab(this, 'jargon')">Jargon Guide</button>
-        <button class="tab" onclick="switchTab(this, 'implications')">Real World Impact</button>
-      </div>
-
-      <div class="tab-content active" id="tab-summary">
-        <div class="summary-section">
-          <div class="section-label">What They Studied</div>
-          <div class="section-text" id="whatStudied"></div>
-        </div>
-        <div class="summary-section">
-          <div class="section-label">How They Studied It</div>
-          <div class="section-text" id="howStudied"></div>
-        </div>
-        <div class="summary-section">
-          <div class="section-label">What They Found</div>
-          <div class="section-text" id="whatFound"></div>
-        </div>
-        <div class="summary-section">
-          <div class="section-label">How Confident Should We Be</div>
-          <div class="section-text" id="confidence"></div>
-        </div>
-        <button class="flag-btn" onclick="showToast('Thank you — flagged for review')">⚑ Flag an error in this summary</button>
-      </div>
-
-      <div class="tab-content" id="tab-jargon">
-        <div class="section-label" style="margin-bottom:0.75rem">Plain Language Guide</div>
-        <div id="jargonContent"></div>
-      </div>
-
-      <div class="tab-content" id="tab-implications">
-        <div class="summary-section">
-          <div class="section-label">What This Means Outside the Lab</div>
-          <div class="section-text" id="realWorld"></div>
-        </div>
-        <div class="summary-section">
-          <div class="section-label">Why You Should Care</div>
-          <div class="section-text" id="whyCare"></div>
-        </div>
+    <div id="preprintWarning" class="preprint-warning" style="display:none">
+      <div>⚠</div>
+      <div class="warning-text">
+        <strong>This paper has not been peer reviewed.</strong> Claims should be treated as preliminary and have not been independently verified by journal reviewers.
       </div>
     </div>
-  </div>
 
-  <!-- Abstract -->
-  <div class="abstract">
-    <div class="abstract-label">Abstract</div>
-    <div class="abstract-text" id="abstractText"></div>
-  </div>
+    <div id="paywallNotice" class="paywall-notice" style="display:none">
+      <div>⚿</div>
+      <div class="paywall-text">
+        <strong>This paper requires a subscription to read in full.</strong> The AI summary below is based on the publicly available abstract only. Full text access requires institutional or personal journal subscription.
+      </div>
+    </div>
 
+    <div class="status-row" id="statusRow"></div>
+    <h1 class="paper-title" id="paperTitle"></h1>
+    <div class="paper-authors" id="paperAuthors"></div>
+    <div class="paper-meta" id="paperMeta"></div>
+    <div class="paper-divider"></div>
+
+    <!-- AI Summary -->
+    <div class="ai-summary">
+      <div class="ai-header">
+        <div class="ai-title">
+          <div class="ai-icon">✦</div>
+          <span class="ai-label">Annotia AI Summary — Powered by Claude</span>
+        </div>
+        <div class="ai-disclaimer">AI-generated · Always verify against source</div>
+      </div>
+      <div class="ai-body">
+        <div class="summary-tabs">
+          <button class="tab active" onclick="switchTab(this, 'summary')">Summary</button>
+          <button class="tab" onclick="switchTab(this, 'jargon')">Jargon Guide</button>
+          <button class="tab" onclick="switchTab(this, 'implications')">Real World Impact</button>
+        </div>
+
+        <div class="tab-content active" id="tab-summary">
+          <div class="summary-section">
+            <div class="section-label">What They Studied</div>
+            <div class="section-text" id="whatStudied"></div>
+          </div>
+          <div class="summary-section">
+            <div class="section-label">How They Studied It</div>
+            <div class="section-text" id="howStudied"></div>
+          </div>
+          <div class="summary-section">
+            <div class="section-label">What They Found</div>
+            <div class="section-text" id="whatFound"></div>
+          </div>
+          <div class="summary-section">
+            <div class="section-label">How Confident Should We Be</div>
+            <div class="section-text" id="confidence"></div>
+          </div>
+          <button class="flag-btn" onclick="showToast('Thank you — flagged for review')">⚑ Flag an error in this summary</button>
+        </div>
+
+        <div class="tab-content" id="tab-jargon">
+          <div class="section-label" style="margin-bottom:0.75rem">Plain Language Guide</div>
+          <div id="jargonContent"></div>
+        </div>
+
+        <div class="tab-content" id="tab-implications">
+          <div class="summary-section">
+            <div class="section-label">What This Means Outside the Lab</div>
+            <div class="section-text" id="realWorld"></div>
+          </div>
+          <div class="summary-section">
+            <div class="section-label">Why You Should Care</div>
+            <div class="section-text" id="whyCare"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Abstract -->
+    <div class="abstract">
+      <div class="abstract-label">Abstract</div>
+      <div class="abstract-text" id="abstractText"></div>
+    </div>
+
+  </div>
 </div>
+
+<footer>
+  <div class="footer-text">
+    <a href="/">Annotia</a> · Open Science for Everyone · AI summaries powered by Claude · <a href="/">Join the waitlist</a>
+  </div>
+</footer>
 
 <div class="toast" id="toast"></div>
 
 <script>
-  let currentStep = 0;
-
   function loadDoi(doi) {
     document.getElementById('doiInput').value = doi;
+    document.getElementById('doiInput').focus();
   }
 
   function setStep(n) {
@@ -515,43 +523,47 @@
 
   function showError(msg) {
     document.getElementById('loadingState').classList.remove('visible');
-    document.getElementById('errorState').style.display = 'block';
+    const card = document.getElementById('errorCard');
+    card.classList.add('visible');
     document.getElementById('errorText').textContent = msg;
+    document.getElementById('generateBtn').disabled = false;
+    document.getElementById('generateBtn').textContent = 'Summarise';
   }
 
   function resetApp() {
-    document.getElementById('setupPanel').style.display = 'block';
+    document.getElementById('searchSection').style.display = 'block';
     document.getElementById('loadingState').classList.remove('visible');
-    document.getElementById('errorState').style.display = 'none';
+    document.getElementById('errorCard').classList.remove('visible');
     document.getElementById('paperResult').classList.remove('visible');
     document.getElementById('generateBtn').disabled = false;
-    document.getElementById('generateBtn').textContent = 'Generate Summary';
+    document.getElementById('generateBtn').textContent = 'Summarise';
+    window.scrollTo(0, 0);
   }
 
-  async function generateSummary() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    const doi = document.getElementById('doiInput').value.trim();
+  // Allow Enter key
+  document.getElementById('doiInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') generateSummary();
+  });
 
-    if (!apiKey) { showToast('Please enter your Anthropic API key'); return; }
+  async function generateSummary() {
+    const doi = document.getElementById('doiInput').value.trim();
     if (!doi) { showToast('Please enter a DOI'); return; }
 
     document.getElementById('generateBtn').disabled = true;
-    document.getElementById('generateBtn').textContent = 'Generating...';
-    document.getElementById('setupPanel').style.display = 'none';
-    document.getElementById('errorState').style.display = 'none';
+    document.getElementById('generateBtn').textContent = 'Working...';
+    document.getElementById('errorCard').classList.remove('visible');
     document.getElementById('loadingState').classList.add('visible');
     setStep(1);
 
-    // STEP 1: Fetch metadata from CrossRef
+    // Fetch metadata from CrossRef
     let paperData;
     try {
-      const crossrefUrl = `https://api.crossref.org/works/${encodeURIComponent(doi)}`;
-      const res = await fetch(crossrefUrl);
-      if (!res.ok) throw new Error('DOI not found. Please check the DOI and try again.');
+      const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`);
+      if (!res.ok) throw new Error('DOI not found. Please check and try again.');
       const data = await res.json();
       paperData = data.message;
     } catch (e) {
-      showError('Could not fetch paper metadata: ' + e.message);
+      showError('Could not fetch paper: ' + e.message);
       return;
     }
 
@@ -559,119 +571,47 @@
 
     // Extract metadata
     const title = paperData.title?.[0] || 'Unknown Title';
-    // Parse authors — handle individual names, group authors, and missing data
-    let authors = 'Unknown Authors';
     const authorList = paperData.author || [];
+    let authors = 'Unknown Authors';
     if (authorList.length > 0) {
-      const parsed = authorList.map(a => {
-        if (a.name) return a.name; // group author e.g. "Open Science Collaboration"
-        const given = a.given || '';
-        const family = a.family || '';
-        return `${given} ${family}`.trim();
-      }).filter(Boolean);
-      if (parsed.length > 0) {
-        // If more than 6 authors, show first 3 + "et al."
-        authors = parsed.length > 6
-          ? parsed.slice(0, 3).join(', ') + ' et al.'
-          : parsed.join(', ');
-      }
+      const parsed = authorList.map(a => a.name || `${a.given || ''} ${a.family || ''}`.trim()).filter(Boolean);
+      if (parsed.length > 0) authors = parsed.length > 6 ? parsed.slice(0,3).join(', ') + ' et al.' : parsed.join(', ');
     }
-    // Fallback: check for editor field if no authors
-    if (authors === 'Unknown Authors' && paperData.editor && paperData.editor.length > 0) {
+    if (authors === 'Unknown Authors' && paperData.editor?.length > 0) {
       authors = paperData.editor.map(e => `${e.given || ''} ${e.family || ''}`.trim()).filter(Boolean).join(', ') + ' (Eds.)';
     }
+
     const journal = paperData['container-title']?.[0] || paperData.publisher || 'Unknown Journal';
     const year = paperData.published?.['date-parts']?.[0]?.[0] || paperData['published-print']?.['date-parts']?.[0]?.[0] || 'Unknown Year';
-    const abstract = paperData.abstract ? paperData.abstract.replace(/<[^>]*>/g, '') : 'Abstract not available for this paper.';
+    const abstract = paperData.abstract ? paperData.abstract.replace(/<[^>]*>/g, '') : 'Abstract not available.';
     const type = paperData.type || 'journal-article';
     const subject = paperData.subject?.[0] || '';
-    const isPreprint = type.includes('posted') || journal.toLowerCase().includes('arxiv') || journal.toLowerCase().includes('biorxiv') || journal.toLowerCase().includes('medrxiv') || journal.toLowerCase().includes('psyarxiv');
-
-    // Detect open access status from CrossRef license data
     const licenses = paperData.license || [];
-    const isOpenAccess = isPreprint ||
-      licenses.some(l =>
-        l.URL && (
-          l.URL.includes('creativecommons') ||
-          l.URL.includes('open-access') ||
-          l.URL.includes('opensource') ||
-          l.URL.includes('plos') ||
-          l.URL.includes('wiley.com/terms-and-conditions-for-use-of-self-archived')
-        )
-      ) ||
-      (paperData['is-referenced-by-count'] !== undefined && licenses.length > 0) ||
-      journal.toLowerCase().includes('plos') ||
-      journal.toLowerCase().includes('peerj') ||
-      journal.toLowerCase().includes('frontiers') ||
-      journal.toLowerCase().includes('elife') ||
-      journal.toLowerCase().includes('bmj open') ||
-      journal.toLowerCase().includes('f1000');
-
-    // Check if abstract is available
-    const hasAbstract = abstract && abstract !== 'Abstract not available for this paper.' && abstract.length > 50;
-
-    // Build prompt for Claude
-    const prompt = `You are a research summarization assistant for Annotia, a scholarly paper discussion platform. Your job is to generate clear, accurate, accessible summaries of academic papers for a mixed audience of researchers, clinicians, and intelligent non-specialists.
-
-Here is the paper to summarize:
-
-TITLE: ${title}
-AUTHORS: ${authors}
-JOURNAL: ${journal}
-YEAR: ${year}
-DOI: ${doi}
-ABSTRACT: ${abstract}
-
-Generate a structured JSON summary with exactly these fields. Be accurate, specific, and draw only from what is stated or clearly implied in the abstract. Do not invent details.
-
-{
-  "whatStudied": "2-3 sentences explaining the research question in plain language. What problem or question were the researchers trying to answer?",
-  "howStudied": "2-3 sentences explaining the methodology in plain language. How did they design the study, what data did they collect, how many participants/samples if mentioned?",
-  "whatFound": "2-3 sentences summarizing the key findings in plain language. What did they discover or conclude?",
-  "confidence": "2-3 sentences evaluating how much weight to give these findings. Comment on study design, sample size if mentioned, whether it is peer reviewed or a preprint, and any limitations visible from the abstract.",
-  "jargonTerms": [
-    {"term": "Technical term 1", "definition": "Plain language definition in 1-2 sentences"},
-    {"term": "Technical term 2", "definition": "Plain language definition in 1-2 sentences"},
-    {"term": "Technical term 3", "definition": "Plain language definition in 1-2 sentences"},
-    {"term": "Technical term 4", "definition": "Plain language definition in 1-2 sentences"}
-  ],
-  "realWorld": "2-3 sentences explaining what these findings mean outside the lab. What are the practical implications for clinicians, policymakers, patients, or the public?",
-  "whyCare": "1-2 sentences explaining why this matters to a non-specialist. What is the broader significance?"
-}
-
-Respond with ONLY the JSON object. No preamble, no explanation, no markdown code fences.`;
+    const isPreprint = type.includes('posted') || ['arxiv','biorxiv','medrxiv','psyarxiv'].some(s => journal.toLowerCase().includes(s));
+    const isOpenAccess = isPreprint || licenses.some(l => l.URL && l.URL.includes('creativecommons')) || ['plos','peerj','frontiers','elife','bmj open','f1000'].some(s => journal.toLowerCase().includes(s));
+    const hasAbstract = abstract && abstract !== 'Abstract not available.' && abstract.length > 50;
 
     setStep(3);
 
-    // STEP 2: Call Claude API
+    // Call our serverless API — no API key needed in browser
     let summaryData;
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('/api/summarize', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1500,
-          messages: [{ role: 'user', content: prompt }]
+          doi,
+          metadata: { title, authors, journal, year, abstract }
         })
       });
 
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.error?.message || 'API request failed. Please check your API key.');
+        throw new Error(err.error || 'Summary generation failed');
       }
 
       const result = await response.json();
-      const rawText = result.content[0].text.trim();
-
-      // Parse JSON — strip any accidental fences
-      const clean = rawText.replace(/```json|```/g, '').trim();
-      summaryData = JSON.parse(clean);
+      summaryData = result.summaryData;
 
     } catch (e) {
       showError('Could not generate summary: ' + e.message);
@@ -680,34 +620,28 @@ Respond with ONLY the JSON object. No preamble, no explanation, no markdown code
 
     setStep(4);
 
-    // STEP 3: Render the paper page
     setTimeout(() => {
       renderPaper({ title, authors, journal, year, doi, abstract, isPreprint, isOpenAccess, hasAbstract, subject, summaryData });
-    }, 400);
+    }, 300);
   }
 
   function renderPaper({ title, authors, journal, year, doi, abstract, isPreprint, isOpenAccess, hasAbstract, subject, summaryData }) {
     // Status badges
     const statusRow = document.getElementById('statusRow');
     statusRow.innerHTML = '';
-    if (isPreprint) {
-      statusRow.innerHTML += '<span class="status-badge badge-preprint">⚠ Preprint — Not Peer Reviewed</span>';
-    } else {
-      statusRow.innerHTML += '<span class="status-badge badge-peer">✓ Peer Reviewed</span>';
-    }
+    statusRow.innerHTML += isPreprint
+      ? '<span class="status-badge badge-preprint">⚠ Preprint</span>'
+      : '<span class="status-badge badge-peer">✓ Peer Reviewed</span>';
     if (subject) statusRow.innerHTML += `<span class="status-badge badge-field">${subject}</span>`;
-    if (isOpenAccess) {
-      statusRow.innerHTML += '<span class="status-badge badge-open">Open Access</span>';
-    } else {
-      statusRow.innerHTML += '<span class="status-badge" style="background:rgba(160,100,60,0.15);color:#c8784a;border:1px solid rgba(160,100,60,0.3);">⚿ Subscription Required</span>';
-    }
-    if (!hasAbstract) {
-      statusRow.innerHTML += '<span class="status-badge" style="background:var(--red-dim);color:var(--red);border:1px solid rgba(192,80,74,0.3);">⚠ Limited Abstract</span>';
-    }
+    statusRow.innerHTML += isOpenAccess
+      ? '<span class="status-badge badge-open">Open Access</span>'
+      : '<span class="status-badge badge-paywall">⚿ Subscription Required</span>';
+    if (!hasAbstract) statusRow.innerHTML += '<span class="status-badge badge-warn">Limited Abstract</span>';
     statusRow.innerHTML += '<span class="status-badge badge-ai">✦ AI Summary</span>';
 
-    // Preprint warning
+    // Warnings
     document.getElementById('preprintWarning').style.display = isPreprint ? 'flex' : 'none';
+    document.getElementById('paywallNotice').style.display = (!isOpenAccess && !isPreprint) ? 'flex' : 'none';
 
     // Paper details
     document.getElementById('paperTitle').textContent = title;
@@ -715,20 +649,20 @@ Respond with ONLY the JSON object. No preamble, no explanation, no markdown code
     document.getElementById('paperMeta').innerHTML = `
       <div class="meta-item">📄 <strong>${journal}</strong></div>
       <div class="meta-item">📅 <strong>${year}</strong></div>
-      <div class="meta-item">🔗 <strong>DOI: ${doi}</strong></div>
+      <div class="meta-item">🔗 <strong>${doi}</strong></div>
     `;
 
-    // Abstract warning if limited
+    // Abstract
     const abstractEl = document.getElementById('abstractText');
     if (!hasAbstract) {
-      abstractEl.textContent = 'Full abstract not available for this paper via CrossRef. The AI summary above was generated from available metadata only and may be less detailed than usual.';
+      abstractEl.textContent = 'Full abstract not available via CrossRef. The AI summary was generated from available metadata and may be less detailed than usual.';
       abstractEl.style.color = 'var(--preprint)';
     } else {
       abstractEl.textContent = abstract;
       abstractEl.style.color = '';
     }
 
-    // Summary tabs
+    // Summary content
     document.getElementById('whatStudied').textContent = summaryData.whatStudied || '';
     document.getElementById('howStudied').textContent = summaryData.howStudied || '';
     document.getElementById('whatFound').textContent = summaryData.whatFound || '';
@@ -736,27 +670,27 @@ Respond with ONLY the JSON object. No preamble, no explanation, no markdown code
     document.getElementById('realWorld').textContent = summaryData.realWorld || '';
     document.getElementById('whyCare').textContent = summaryData.whyCare || '';
 
-    // Jargon terms
+    // Jargon
     const jargonContainer = document.getElementById('jargonContent');
     jargonContainer.innerHTML = '';
-    if (summaryData.jargonTerms && summaryData.jargonTerms.length > 0) {
-      summaryData.jargonTerms.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'jargon-term';
-        div.innerHTML = `<strong>${item.term}</strong><span>${item.definition}</span>`;
-        jargonContainer.appendChild(div);
-      });
-    } else {
-      jargonContainer.innerHTML = '<div style="font-size:0.85rem;color:var(--text-dim)">No technical terms identified in this paper.</div>';
+    (summaryData.jargonTerms || []).forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'jargon-term';
+      div.innerHTML = `<strong>${item.term}</strong><span>${item.definition}</span>`;
+      jargonContainer.appendChild(div);
+    });
+    if (!summaryData.jargonTerms?.length) {
+      jargonContainer.innerHTML = '<div style="font-size:0.85rem;color:var(--text-dim)">No technical terms identified.</div>';
     }
 
-    // Switch to first tab
+    // Reset tabs
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelector('.tab').classList.add('active');
     document.getElementById('tab-summary').classList.add('active');
 
     // Show result
+    document.getElementById('searchSection').style.display = 'none';
     document.getElementById('loadingState').classList.remove('visible');
     document.getElementById('paperResult').classList.add('visible');
     window.scrollTo(0, 0);
@@ -778,32 +712,32 @@ Respond with ONLY the JSON object. No preamble, no explanation, no markdown code
 </script>
 
 <!-- AUTH MODAL -->
-<div class="modal-overlay" id="authModal">
-  <div class="modal">
-    <button class="modal-close" id="closeModalBtn">&#x2715;</button>
+<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="background:var(--surface);border:1px solid var(--border-light);border-radius:6px;padding:2rem;width:100%;max-width:420px;margin:1rem;position:relative;">
+    <button id="closeModalBtn" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem;">x</button>
     <div id="loginView">
-      <div class="modal-title">Welcome back</div>
-      <div class="modal-sub">Log in to save papers and join the discussion.</div>
-      <div class="modal-error" id="loginError"></div>
-      <label class="modal-label">Email</label>
-      <input class="modal-input" type="email" id="loginEmail" placeholder="your@email.com" />
-      <label class="modal-label">Password</label>
-      <input class="modal-input" type="password" id="loginPassword" placeholder="Password" />
-      <button class="btn-modal-primary" id="doLoginBtn">Log In</button>
-      <div class="modal-switch">No account? <a id="switchToSignup">Sign up free</a></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:600;color:var(--text);margin-bottom:0.3rem;">Welcome back</div>
+      <div style="font-size:0.82rem;color:var(--text-dim);margin-bottom:1.5rem;">Log in to save papers and join the discussion.</div>
+      <div id="loginError" style="display:none;background:var(--red-dim);border:1px solid rgba(208,96,96,0.3);border-radius:2px;padding:0.6rem 0.8rem;margin-bottom:1rem;font-size:0.8rem;color:var(--red);"></div>
+      <label style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Email</label>
+      <input id="loginEmail" type="email" placeholder="your@email.com" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:0.88rem;padding:0.65rem 0.9rem;border-radius:2px;outline:none;margin-bottom:1rem;" />
+      <label style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Password</label>
+      <input id="loginPassword" type="password" placeholder="Password" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:0.88rem;padding:0.65rem 0.9rem;border-radius:2px;outline:none;margin-bottom:1rem;" />
+      <button id="doLoginBtn" style="width:100%;font-family:'DM Mono',monospace;font-size:0.75rem;padding:0.75rem;background:var(--gold);border:none;color:var(--bg);cursor:pointer;letter-spacing:0.08em;text-transform:uppercase;font-weight:500;border-radius:2px;margin-bottom:0.75rem;">Log In</button>
+      <div style="font-size:0.82rem;color:var(--text-dim);text-align:center;">No account? <a id="switchToSignup" style="color:var(--gold);cursor:pointer;">Sign up free</a></div>
     </div>
-    <div id="signupView" style="display:none">
-      <div class="modal-title">Join Annotia</div>
-      <div class="modal-sub">Create a free account to save papers and annotate research.</div>
-      <div class="modal-error" id="signupError"></div>
-      <label class="modal-label">Full Name</label>
-      <input class="modal-input" type="text" id="signupName" placeholder="Your name" />
-      <label class="modal-label">Email</label>
-      <input class="modal-input" type="email" id="signupEmail" placeholder="your@email.com" />
-      <label class="modal-label">Password</label>
-      <input class="modal-input" type="password" id="signupPassword" placeholder="Min. 8 characters" />
-      <label class="modal-label">I am a...</label>
-      <select class="modal-select" id="signupRole">
+    <div id="signupView" style="display:none;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:600;color:var(--text);margin-bottom:0.3rem;">Join Annotia</div>
+      <div style="font-size:0.82rem;color:var(--text-dim);margin-bottom:1.5rem;">Create a free account to save papers and annotate research.</div>
+      <div id="signupError" style="display:none;background:var(--red-dim);border:1px solid rgba(208,96,96,0.3);border-radius:2px;padding:0.6rem 0.8rem;margin-bottom:1rem;font-size:0.8rem;color:var(--red);"></div>
+      <label style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Full Name</label>
+      <input id="signupName" type="text" placeholder="Your name" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:0.88rem;padding:0.65rem 0.9rem;border-radius:2px;outline:none;margin-bottom:1rem;" />
+      <label style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Email</label>
+      <input id="signupEmail" type="email" placeholder="your@email.com" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:0.88rem;padding:0.65rem 0.9rem;border-radius:2px;outline:none;margin-bottom:1rem;" />
+      <label style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Password</label>
+      <input id="signupPassword" type="password" placeholder="Min. 8 characters" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:0.88rem;padding:0.65rem 0.9rem;border-radius:2px;outline:none;margin-bottom:1rem;" />
+      <label style="font-family:'DM Mono',monospace;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);display:block;margin-bottom:0.35rem;">I am a...</label>
+      <select id="signupRole" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:0.88rem;padding:0.65rem 0.9rem;border-radius:2px;outline:none;margin-bottom:1rem;cursor:pointer;">
         <option value="">Select your role</option>
         <option value="clinician">Clinician / Nurse Practitioner</option>
         <option value="researcher">Researcher</option>
@@ -811,14 +745,14 @@ Respond with ONLY the JSON object. No preamble, no explanation, no markdown code
         <option value="journalist">Journalist / Science Communicator</option>
         <option value="curious">Curious Non-Specialist</option>
       </select>
-      <button class="btn-modal-primary" id="doSignupBtn">Create Account</button>
-      <div class="modal-switch">Have an account? <a id="switchToLogin">Log in</a></div>
+      <button id="doSignupBtn" style="width:100%;font-family:'DM Mono',monospace;font-size:0.75rem;padding:0.75rem;background:var(--gold);border:none;color:var(--bg);cursor:pointer;letter-spacing:0.08em;text-transform:uppercase;font-weight:500;border-radius:2px;margin-bottom:0.75rem;">Create Account</button>
+      <div style="font-size:0.82rem;color:var(--text-dim);text-align:center;">Have an account? <a id="switchToLogin" style="color:var(--gold);cursor:pointer;">Log in</a></div>
     </div>
-    <div id="successView" style="display:none;text-align:center;padding:1rem 0">
-      <div style="font-size:2rem;margin-bottom:1rem">&#10003;</div>
-      <div class="modal-title" style="font-size:1.3rem">Check your email</div>
-      <div class="modal-sub">We sent a confirmation link. Click it then come back to log in.</div>
-      <button class="btn-modal-primary" id="backToLoginBtn">Back to Log In</button>
+    <div id="successView" style="display:none;text-align:center;padding:1rem 0;">
+      <div style="font-size:2rem;margin-bottom:1rem;">&#10003;</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--text);margin-bottom:0.5rem;">Check your email</div>
+      <div style="font-size:0.82rem;color:var(--text-dim);margin-bottom:1.5rem;">We sent a confirmation link. Click it then come back to log in.</div>
+      <button id="backToLoginBtn" style="width:100%;font-family:'DM Mono',monospace;font-size:0.75rem;padding:0.75rem;background:var(--gold);border:none;color:var(--bg);cursor:pointer;border-radius:2px;">Back to Log In</button>
     </div>
   </div>
 </div>
@@ -829,7 +763,6 @@ Respond with ONLY the JSON object. No preamble, no explanation, no markdown code
   var _user = null;
   var _paperId = null;
 
-  // Init Supabase
   async function init() {
     try {
       var r = await fetch('/api/config');
@@ -838,85 +771,77 @@ Respond with ONLY the JSON object. No preamble, no explanation, no markdown code
         _sb = window.supabase.createClient(cfg.url, cfg.anonKey);
         var sess = await _sb.auth.getSession();
         if (sess.data.session) setUser(sess.data.session.user);
-        _sb.auth.onAuthStateChange(function(event, session) {
-          setUser(session ? session.user : null);
-        });
+        _sb.auth.onAuthStateChange(function(e, s) { setUser(s ? s.user : null); });
       }
     } catch(e) { console.log('Init error', e); }
   }
 
   function setUser(user) {
     _user = user;
-    var authBtns = document.getElementById('authButtons');
-    var userSection = document.getElementById('userMenuSection');
-    var authPrompt = document.getElementById('authPromptBanner');
-    var saveRow = document.getElementById('saveRow');
+    var ab = document.getElementById('authButtons');
+    var us = document.getElementById('userMenuSection');
+    var ap = document.getElementById('authPromptBanner');
+    var sr = document.getElementById('saveRow');
     if (user) {
-      if (authBtns) authBtns.style.display = 'none';
-      if (userSection) userSection.style.display = 'block';
-      var initials = ((user.user_metadata && user.user_metadata.full_name) || user.email || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
-      var av = document.getElementById('userAvatar');
-      if (av) av.textContent = initials;
-      var nm = document.getElementById('userMenuName');
-      if (nm) nm.textContent = (user.user_metadata && user.user_metadata.full_name) || 'User';
-      var em = document.getElementById('userMenuEmail');
-      if (em) em.textContent = user.email;
-      if (authPrompt) authPrompt.style.display = 'none';
-      if (saveRow && _paperId) saveRow.style.display = 'block';
+      if (ab) ab.style.display = 'none';
+      if (us) us.style.display = 'block';
+      var init = ((user.user_metadata && user.user_metadata.full_name) || user.email || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
+      var av = document.getElementById('userAvatar'); if (av) av.textContent = init;
+      var nm = document.getElementById('userMenuName'); if (nm) nm.textContent = (user.user_metadata && user.user_metadata.full_name) || 'User';
+      var em = document.getElementById('userMenuEmail'); if (em) em.textContent = user.email;
+      if (ap) ap.style.display = 'none';
+      if (sr && _paperId) sr.style.display = 'block';
     } else {
-      if (authBtns) authBtns.style.display = 'flex';
-      if (userSection) userSection.style.display = 'none';
-      if (authPrompt && _paperId) authPrompt.style.display = 'flex';
-      if (saveRow) saveRow.style.display = 'none';
+      if (ab) ab.style.display = 'flex';
+      if (us) us.style.display = 'none';
+      if (ap && _paperId) { ap.style.display = 'flex'; }
+      if (sr) sr.style.display = 'none';
     }
   }
 
   function showModal(view) {
-    document.getElementById('authModal').classList.add('visible');
+    var m = document.getElementById('authModal');
+    m.style.display = 'flex';
     document.getElementById('loginView').style.display = view === 'login' ? 'block' : 'none';
     document.getElementById('signupView').style.display = view === 'signup' ? 'block' : 'none';
     document.getElementById('successView').style.display = view === 'success' ? 'block' : 'none';
   }
 
-  function hideModal() {
-    document.getElementById('authModal').classList.remove('visible');
-  }
+  function hideModal() { document.getElementById('authModal').style.display = 'none'; }
 
-  // Wire up buttons after DOM ready
+  window.setActivePaper = function(pid) {
+    _paperId = pid;
+    setUser(_user);
+  };
+
   document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('loginBtn').onclick = function() { showModal('login'); };
     document.getElementById('signupBtn').onclick = function() { showModal('signup'); };
     document.getElementById('closeModalBtn').onclick = hideModal;
+    document.getElementById('authModal').onclick = function(e) { if (e.target === document.getElementById('authModal')) hideModal(); };
     document.getElementById('switchToSignup').onclick = function() { showModal('signup'); };
     document.getElementById('switchToLogin').onclick = function() { showModal('login'); };
     document.getElementById('backToLoginBtn').onclick = function() { hideModal(); showModal('login'); };
-    document.getElementById('authPromptBtn').onclick = function() { showModal('signup'); };
+    if (document.getElementById('authPromptBtn')) document.getElementById('authPromptBtn').onclick = function() { showModal('signup'); };
     document.getElementById('signOutBtn').onclick = async function() {
       if (_sb) await _sb.auth.signOut();
-      document.getElementById('userMenuDropdown').classList.remove('visible');
+      document.getElementById('userMenuDropdown').style.display = 'none';
       showToast('Signed out');
     };
     document.getElementById('userAvatar').onclick = function() {
-      document.getElementById('userMenuDropdown').classList.toggle('visible');
+      var d = document.getElementById('userMenuDropdown');
+      d.style.display = d.style.display === 'block' ? 'none' : 'block';
     };
     document.getElementById('doLoginBtn').onclick = async function() {
       var email = document.getElementById('loginEmail').value.trim();
       var pass = document.getElementById('loginPassword').value;
       var errEl = document.getElementById('loginError');
-      errEl.classList.remove('visible');
-      if (!email || !pass) { errEl.textContent = 'Please fill in all fields'; errEl.classList.add('visible'); return; }
-      document.getElementById('doLoginBtn').disabled = true;
-      document.getElementById('doLoginBtn').textContent = 'Logging in...';
+      errEl.style.display = 'none';
+      if (!email || !pass) { errEl.textContent = 'Please fill in all fields'; errEl.style.display = 'block'; return; }
+      document.getElementById('doLoginBtn').disabled = true; document.getElementById('doLoginBtn').textContent = 'Logging in...';
       var result = await _sb.auth.signInWithPassword({ email: email, password: pass });
-      if (result.error) {
-        errEl.textContent = result.error.message;
-        errEl.classList.add('visible');
-        document.getElementById('doLoginBtn').disabled = false;
-        document.getElementById('doLoginBtn').textContent = 'Log In';
-      } else {
-        hideModal();
-        showToast('Welcome back!');
-      }
+      if (result.error) { errEl.textContent = result.error.message; errEl.style.display = 'block'; document.getElementById('doLoginBtn').disabled = false; document.getElementById('doLoginBtn').textContent = 'Log In'; }
+      else { hideModal(); showToast('Welcome back!'); }
     };
     document.getElementById('doSignupBtn').onclick = async function() {
       var name = document.getElementById('signupName').value.trim();
@@ -924,48 +849,32 @@ Respond with ONLY the JSON object. No preamble, no explanation, no markdown code
       var pass = document.getElementById('signupPassword').value;
       var role = document.getElementById('signupRole').value;
       var errEl = document.getElementById('signupError');
-      errEl.classList.remove('visible');
-      if (!name || !email || !pass) { errEl.textContent = 'Please fill in all fields'; errEl.classList.add('visible'); return; }
-      if (pass.length < 8) { errEl.textContent = 'Password must be at least 8 characters'; errEl.classList.add('visible'); return; }
-      document.getElementById('doSignupBtn').disabled = true;
-      document.getElementById('doSignupBtn').textContent = 'Creating account...';
+      errEl.style.display = 'none';
+      if (!name || !email || !pass) { errEl.textContent = 'Please fill in all fields'; errEl.style.display = 'block'; return; }
+      if (pass.length < 8) { errEl.textContent = 'Password must be at least 8 characters'; errEl.style.display = 'block'; return; }
+      document.getElementById('doSignupBtn').disabled = true; document.getElementById('doSignupBtn').textContent = 'Creating account...';
       var result = await _sb.auth.signUp({ email: email, password: pass, options: { data: { full_name: name, role: role } } });
-      if (result.error) {
-        errEl.textContent = result.error.message;
-        errEl.classList.add('visible');
-        document.getElementById('doSignupBtn').disabled = false;
-        document.getElementById('doSignupBtn').textContent = 'Create Account';
-      } else {
-        showModal('success');
-      }
+      if (result.error) { errEl.textContent = result.error.message; errEl.style.display = 'block'; document.getElementById('doSignupBtn').disabled = false; document.getElementById('doSignupBtn').textContent = 'Create Account'; }
+      else { showModal('success'); }
     };
     document.getElementById('savePaperBtn').onclick = async function() {
       if (!_user || !_paperId || !_sb) return;
       var btn = document.getElementById('savePaperBtn');
-      var saved = btn.classList.contains('saved');
+      var saved = btn.dataset.saved === 'true';
       if (saved) {
         await _sb.from('saved_papers').delete().eq('user_id', _user.id).eq('paper_id', _paperId);
-        btn.classList.remove('saved');
-        btn.textContent = 'Save Paper';
+        btn.dataset.saved = 'false'; btn.textContent = 'Save Paper';
+        btn.style.borderColor = 'var(--border-light)'; btn.style.color = 'var(--text-dim)'; btn.style.background = 'transparent';
         showToast('Removed from saved list');
       } else {
         await _sb.from('saved_papers').insert({ user_id: _user.id, paper_id: _paperId });
-        btn.classList.add('saved');
-        btn.textContent = 'Saved';
+        btn.dataset.saved = 'true'; btn.textContent = 'Saved';
+        btn.style.borderColor = 'var(--gold)'; btn.style.color = 'var(--gold)'; btn.style.background = 'var(--gold-dim)';
         showToast('Paper saved!');
       }
     };
-    document.getElementById('authModal').onclick = function(e) {
-      if (e.target === document.getElementById('authModal')) hideModal();
-    };
     init();
   });
-
-  // Expose setActivePaper for main app to call
-  window.setActivePaper = function(paperId) {
-    _paperId = paperId;
-    setUser(_user);
-  };
 })();
 </script>
 
