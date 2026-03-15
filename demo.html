@@ -652,6 +652,7 @@
 
     // Paper details
     document.getElementById('paperTitle').textContent = title;
+    window._currentDoi = doi;
     document.getElementById('paperAuthors').textContent = authors;
     document.getElementById('paperMeta').innerHTML = `
       <div class="meta-item">📄 <strong>${journal}</strong></div>
@@ -878,19 +879,57 @@
       else { showModal('success'); }
     };
     var spb = document.getElementById('savePaperBtn'); if (spb) spb.onclick = async function() {
-      if (!_user || !_paperId || !_sb) return;
+      console.log('Save clicked. user:', _user ? _user.email : 'none', 'sb:', !!_sb);
       var btn = document.getElementById('savePaperBtn');
-      var saved = btn.dataset.saved === 'true';
-      if (saved) {
-        await _sb.from('saved_papers').delete().eq('user_id', _user.id).eq('paper_id', _paperId);
-        btn.dataset.saved = 'false'; btn.textContent = 'Save Paper';
-        btn.style.borderColor = 'var(--border-light)'; btn.style.color = 'var(--text-dim)'; btn.style.background = 'transparent';
-        showToast('Removed from saved list');
-      } else {
-        await _sb.from('saved_papers').insert({ user_id: _user.id, paper_id: _paperId });
-        btn.dataset.saved = 'true'; btn.textContent = 'Saved';
-        btn.style.borderColor = 'var(--gold)'; btn.style.color = 'var(--gold)'; btn.style.background = 'var(--gold-dim)';
-        showToast('Paper saved!');
+      if (!_user) { showToast('Please log in to save papers'); return; }
+      if (!_sb) { showToast('Please refresh the page and try again'); return; }
+
+      // Get current paper DOI from the page
+      var doiEl = document.getElementById('paperMeta');
+      var doiText = doiEl ? doiEl.textContent : '';
+      var currentDoi = window._currentDoi || doiText;
+      console.log('DOI:', currentDoi);
+
+      btn.textContent = 'Saving...';
+      btn.disabled = true;
+
+      try {
+        // Upsert paper first
+        var paperTitle = document.getElementById('paperTitle') ? document.getElementById('paperTitle').textContent : 'Unknown';
+        var upsertResult = await _sb.from('papers').upsert({
+          doi: window._currentDoi || 'unknown',
+          title: paperTitle,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'doi' }).select('id').single();
+
+        console.log('Paper upsert:', upsertResult);
+
+        if (upsertResult.data && upsertResult.data.id) {
+          var paperId = upsertResult.data.id;
+          var saved = btn.dataset.saved === 'true';
+          if (saved) {
+            await _sb.from('saved_papers').delete().eq('user_id', _user.id).eq('paper_id', paperId);
+            btn.dataset.saved = 'false'; btn.textContent = 'Save Paper';
+            btn.disabled = false;
+            btn.style.borderColor = 'var(--border-light)'; btn.style.color = 'var(--text-dim)'; btn.style.background = 'transparent';
+            showToast('Removed from saved list');
+          } else {
+            var insertResult = await _sb.from('saved_papers').insert({ user_id: _user.id, paper_id: paperId });
+            console.log('Insert result:', insertResult);
+            btn.dataset.saved = 'true'; btn.textContent = 'Saved';
+            btn.disabled = false;
+            btn.style.borderColor = 'var(--gold)'; btn.style.color = 'var(--gold)'; btn.style.background = 'var(--gold-dim)';
+            showToast('Paper saved!');
+          }
+        } else {
+          console.error('Paper upsert failed:', upsertResult.error);
+          btn.textContent = 'Save Paper'; btn.disabled = false;
+          showToast('Could not save — please try again');
+        }
+      } catch(e) {
+        console.error('Save error:', e);
+        btn.textContent = 'Save Paper'; btn.disabled = false;
+        showToast('Error saving paper');
       }
     };
     init();
