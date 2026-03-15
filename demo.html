@@ -693,6 +693,13 @@
     document.getElementById('searchSection').style.display = 'none';
     document.getElementById('loadingState').classList.remove('visible');
     document.getElementById('paperResult').classList.add('visible');
+    // Show save row for logged in users
+    if (window.setActivePaper) window.setActivePaper(null);
+    var saveRow = document.getElementById('saveRow');
+    var authPrompt = document.getElementById('authPromptBanner');
+    var loggedIn = document.getElementById('userMenuSection') && document.getElementById('userMenuSection').style.display === 'block';
+    if (saveRow) saveRow.style.display = loggedIn ? 'block' : 'none';
+    if (authPrompt) authPrompt.style.display = loggedIn ? 'none' : 'flex';
     window.scrollTo(0, 0);
   }
 
