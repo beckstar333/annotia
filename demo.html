@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -839,6 +839,7 @@
       errEl.style.display = 'none';
       if (!email || !pass) { errEl.textContent = 'Please fill in all fields'; errEl.style.display = 'block'; return; }
       document.getElementById('doLoginBtn').disabled = true; document.getElementById('doLoginBtn').textContent = 'Logging in...';
+      if (!_sb) { errEl.textContent = 'Auth not ready, please refresh'; errEl.style.display = 'block'; document.getElementById('doLoginBtn').disabled = false; document.getElementById('doLoginBtn').textContent = 'Log In'; return; }
       var result = await _sb.auth.signInWithPassword({ email: email, password: pass });
       if (result.error) { errEl.textContent = result.error.message; errEl.style.display = 'block'; document.getElementById('doLoginBtn').disabled = false; document.getElementById('doLoginBtn').textContent = 'Log In'; }
       else { hideModal(); showToast('Welcome back!'); }
@@ -853,11 +854,12 @@
       if (!name || !email || !pass) { errEl.textContent = 'Please fill in all fields'; errEl.style.display = 'block'; return; }
       if (pass.length < 8) { errEl.textContent = 'Password must be at least 8 characters'; errEl.style.display = 'block'; return; }
       document.getElementById('doSignupBtn').disabled = true; document.getElementById('doSignupBtn').textContent = 'Creating account...';
-      var result = await _sb.auth.signUp({ email: email, password: pass, options: { data: { full_name: name, role: role } } });
+      if (!_sb) { errEl.textContent = 'Auth not ready, please refresh'; errEl.style.display = 'block'; document.getElementById('doSignupBtn').disabled = false; document.getElementById('doSignupBtn').textContent = 'Create Account'; return; }
+            var result = await _sb.auth.signUp({ email: email, password: pass, options: { data: { full_name: name, role: role } } });
       if (result.error) { errEl.textContent = result.error.message; errEl.style.display = 'block'; document.getElementById('doSignupBtn').disabled = false; document.getElementById('doSignupBtn').textContent = 'Create Account'; }
       else { showModal('success'); }
     };
-    document.getElementById('savePaperBtn').onclick = async function() {
+    var spb = document.getElementById('savePaperBtn'); if (spb) spb.onclick = async function() {
       if (!_user || !_paperId || !_sb) return;
       var btn = document.getElementById('savePaperBtn');
       var saved = btn.dataset.saved === 'true';
