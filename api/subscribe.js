@@ -13,8 +13,11 @@ export default async function handler(req, res) {
   const publicationId = 'pub_1dd1582d-dc6a-4658-9a42-d1d853f82c92';
 
   if (!apiKey) {
+    console.error('BEEHIIV_API_KEY environment variable is not set');
     return res.status(500).json({ error: 'Beehiiv not configured' });
   }
+
+  console.log('Attempting Beehiiv subscription for:', email);
 
   try {
     const response = await fetch(`https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions`, {
@@ -32,13 +35,15 @@ export default async function handler(req, res) {
       })
     });
 
+    const responseText = await response.text();
+    console.log('Beehiiv response status:', response.status);
+    console.log('Beehiiv response body:', responseText);
+
     if (!response.ok) {
-      const err = await response.json();
-      // If already subscribed treat as success
       if (response.status === 409) {
         return res.status(200).json({ success: true, message: 'already_subscribed' });
       }
-      return res.status(response.status).json({ error: err.message || 'Subscription failed' });
+      return res.status(response.status).json({ error: responseText || 'Subscription failed' });
     }
 
     return res.status(200).json({ success: true });
