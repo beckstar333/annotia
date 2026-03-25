@@ -233,7 +233,15 @@
     <div class="header-nav">
       <a href="/demo.html">Paper Reader</a>
       <a href="/landing.html">About</a>
-      <button class="btn-post" onclick="openPostModal()">+ Post Paper</button>
+      <div id="authNav">
+        <button class="btn-auth" onclick="openAuthModal('login')" style="font-family:'DM Mono',monospace;font-size:0.72rem;background:none;border:1px solid var(--border);color:var(--text-dim);padding:6px 14px;border-radius:4px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;transition:all 0.15s">Sign in</button>
+        <button class="btn-auth" onclick="openAuthModal('signup')" style="font-family:'DM Mono',monospace;font-size:0.72rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:4px;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;margin-left:6px;transition:all 0.15s">Join</button>
+      </div>
+      <div id="userNav" style="display:none;align-items:center;gap:10px">
+        <span id="userGreeting" style="font-size:0.78rem;color:var(--text-dim)"></span>
+        <button class="btn-post" onclick="openPostModal()">+ Post Paper</button>
+        <button onclick="handleSignOut()" style="font-family:'DM Mono',monospace;font-size:0.68rem;background:none;border:none;color:var(--text-muted);cursor:pointer;letter-spacing:0.06em;text-transform:uppercase">Sign out</button>
+      </div>
     </div>
   </div>
 </header>
@@ -340,11 +348,45 @@
   </div>
 </div>
 
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal" style="display:none" onclick="if(event.target===this)closeAuthModal()">
+  <div class="modal" style="width:420px">
+    <div class="modal-title" id="authTitle">Sign in</div>
+    <div class="modal-sub" id="authSub">Welcome back to Annotia.</div>
+
+    <div id="authError" style="display:none;background:rgba(208,96,96,0.12);border:1px solid rgba(208,96,96,0.25);border-radius:6px;padding:10px 14px;font-size:0.8rem;color:var(--red);margin-bottom:16px"></div>
+
+    <div id="authFields">
+      <div id="authNameField" style="display:none;margin-bottom:14px">
+        <label style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px">Full name</label>
+        <input class="modal-input" id="authName" placeholder="Your name" style="font-family:'DM Sans',sans-serif" />
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px">Email</label>
+        <input class="modal-input" id="authEmail" type="email" placeholder="you@university.edu" style="font-family:'DM Sans',sans-serif" />
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px">Password</label>
+        <input class="modal-input" id="authPassword" type="password" placeholder="Min 6 characters" style="font-family:'DM Sans',sans-serif" />
+      </div>
+    </div>
+
+    <button class="modal-btn modal-btn-primary" id="authSubmitBtn" onclick="handleAuth()" style="width:100%;padding:12px;margin-bottom:14px">Sign in</button>
+
+    <div style="text-align:center;font-size:0.82rem;color:var(--text-muted)">
+      <span id="authToggleText">Don't have an account?</span>
+      <span id="authToggleLink" onclick="toggleAuthMode()" style="color:var(--gold);cursor:pointer;margin-left:4px;font-weight:500">Join now</span>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── State ───────────────────────────────────────────────────────────────────
 let sb = null;
 let currentTab = 'feed';
 let fetchedPaper = null;
+let authMode = 'login'; // 'login' or 'signup'
+let currentUser = null;
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 async function init() {
@@ -363,6 +405,7 @@ async function init() {
 
   await loadFeed();
   setupSearch();
+  checkAuth();
 }
 
 // Run init after DOM + Supabase CDN are ready
@@ -666,6 +709,110 @@ function timeAgo(dateStr) {
   const days = Math.floor(hrs / 24);
   if (days < 30) return `${days}d ago`;
   return `${Math.floor(days / 30)}mo ago`;
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+function openAuthModal(mode) {
+  authMode = mode || 'login';
+  updateAuthModal();
+  document.getElementById('authModal').style.display = 'flex';
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPassword').value = '';
+  document.getElementById('authName').value = '';
+}
+
+function closeAuthModal() {
+  document.getElementById('authModal').style.display = 'none';
+}
+
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  updateAuthModal();
+}
+
+function updateAuthModal() {
+  document.getElementById('authTitle').textContent = authMode === 'login' ? 'Sign in' : 'Create account';
+  document.getElementById('authSub').textContent = authMode === 'login' ? 'Welcome back to Annotia.' : 'Join the conversation.';
+  document.getElementById('authNameField').style.display = authMode === 'signup' ? '' : 'none';
+  document.getElementById('authSubmitBtn').textContent = authMode === 'login' ? 'Sign in' : 'Create account';
+  document.getElementById('authToggleText').textContent = authMode === 'login' ? "Don't have an account?" : 'Already have an account?';
+  document.getElementById('authToggleLink').textContent = authMode === 'login' ? 'Join now' : 'Sign in';
+  document.getElementById('authError').style.display = 'none';
+}
+
+async function handleAuth() {
+  if (!sb) { alert('Service unavailable. Please try again later.'); return; }
+
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errorEl = document.getElementById('authError');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Please enter your email and password.';
+    errorEl.style.display = '';
+    return;
+  }
+
+  const btn = document.getElementById('authSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = authMode === 'login' ? 'Signing in...' : 'Creating account...';
+
+  if (authMode === 'signup') {
+    const name = document.getElementById('authName').value.trim();
+    const { data, error } = await sb.auth.signUp({
+      email, password,
+      options: { data: { full_name: name } },
+    });
+    if (error) {
+      errorEl.textContent = error.message;
+      errorEl.style.display = '';
+      btn.disabled = false;
+      btn.textContent = 'Create account';
+      return;
+    }
+    closeAuthModal();
+    showAuthState(data.user);
+  } else {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      errorEl.textContent = error.message;
+      errorEl.style.display = '';
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+      return;
+    }
+    closeAuthModal();
+    showAuthState(data.user);
+  }
+}
+
+async function handleSignOut() {
+  if (sb) await sb.auth.signOut();
+  currentUser = null;
+  showAuthState(null);
+}
+
+function showAuthState(user) {
+  currentUser = user;
+  const authNav = document.getElementById('authNav');
+  const userNav = document.getElementById('userNav');
+
+  if (user) {
+    authNav.style.display = 'none';
+    userNav.style.display = 'flex';
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+    document.getElementById('userGreeting').textContent = name;
+  } else {
+    authNav.style.display = '';
+    userNav.style.display = 'none';
+  }
+}
+
+async function checkAuth() {
+  if (!sb) return;
+  const { data: { user } } = await sb.auth.getUser();
+  if (user) showAuthState(user);
 }
 
 // Boot is handled above in init() with DOMContentLoaded check
