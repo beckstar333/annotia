@@ -348,15 +348,18 @@ let fetchedPaper = null;
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 async function init() {
-  // Get Supabase config
+  // Get Supabase config with timeout
   try {
-    const resp = await fetch('/api/config');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const resp = await fetch('/api/config', { signal: controller.signal });
+    clearTimeout(timeout);
     const { url, anonKey } = await resp.json();
     if (url && anonKey) {
       supabase = window.supabase.createClient(url, anonKey);
     }
   } catch(e) {
-    console.log('Supabase not configured, running in search-only mode');
+    console.log('Supabase not configured or timeout, running in search-only mode');
   }
 
   loadFeed();
@@ -428,18 +431,21 @@ async function loadFeed() {
 
   if (supabase) {
     try {
-      const { data: papers } = await supabase
+      const feedPromise = supabase
         .from('papers')
         .select('*, comments(count)')
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (papers && papers.length > 0) {
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+      const { data: papers, error } = await Promise.race([feedPromise, timeoutPromise]);
+
+      if (!error && papers && papers.length > 0) {
         container.innerHTML = papers.map(p => renderFeedCard(p)).join('');
         return;
       }
     } catch(e) {
-      console.log('Feed query error:', e);
+      console.log('Feed query error or timeout:', e);
     }
   }
 
