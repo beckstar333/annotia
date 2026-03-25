@@ -337,6 +337,7 @@
     </div>
 
     <div id="postPreview" style="display:none"></div>
+    <div id="summaryQuota" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:0.8rem"></div>
     <div id="postError" style="display:none;color:var(--red);font-size:0.82rem;margin:12px 0"></div>
     <div id="postLoading" style="display:none" class="loading"><span class="spinner"></span> Fetching paper...</div>
 
@@ -613,6 +614,7 @@ function openPostModal() {
   document.getElementById('postPreview').style.display = 'none';
   document.getElementById('postError').style.display = 'none';
   document.getElementById('postLoading').style.display = 'none';
+  document.getElementById('summaryQuota').style.display = 'none';
   document.getElementById('postFetchBtn').style.display = '';
   document.getElementById('postSubmitBtn').style.display = 'none';
   fetchedPaper = null;
@@ -664,6 +666,9 @@ async function fetchPaperForPost() {
     document.getElementById('postPreview').style.display = '';
     document.getElementById('postFetchBtn').style.display = 'none';
     document.getElementById('postSubmitBtn').style.display = '';
+
+    // Show summary quota
+    showSummaryQuota();
   } catch(e) {
     document.getElementById('postError').textContent = 'Failed to fetch paper. Check the DOI and try again.';
     document.getElementById('postError').style.display = '';
@@ -722,13 +727,9 @@ async function submitPaper() {
   loadFeed();
 }
 
-async function checkSummaryQuota() {
-  if (!currentUser || !sb) return false;
+async function getSummaryUsage() {
+  if (!sb) return { used: 0, limit: 5, isPro: false };
 
-  // Check if user is Pro (unlimited)
-  const { data: profile } = await sb.from('profiles').select('role').eq('id', currentUser.id).single();
-  // For now, treat any user as free tier — Pro check can be added when Stripe is wired
-  // Count summaries this month
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
@@ -738,8 +739,52 @@ async function checkSummaryQuota() {
     .not('summary_what_studied', 'is', null)
     .gte('updated_at', startOfMonth.toISOString());
 
-  // Free tier: 5 per month (this is a simple global check for now)
-  return (count || 0) < 5;
+  // TODO: check if user is Pro when Stripe is wired
+  return { used: count || 0, limit: 5, isPro: false };
+}
+
+async function checkSummaryQuota() {
+  if (!currentUser || !sb) return false;
+  const { used, limit, isPro } = await getSummaryUsage();
+  return isPro || used < limit;
+}
+
+async function showSummaryQuota() {
+  const el = document.getElementById('summaryQuota');
+  if (!sb) { el.style.display = 'none'; return; }
+
+  const { used, limit, isPro } = await getSummaryUsage();
+  const remaining = Math.max(0, limit - used);
+
+  if (isPro) {
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--gold);font-size:0.9rem">✦</span>
+      <span style="color:var(--text-dim)">AI summary will be generated automatically. <span style="color:var(--gold);font-weight:500">Pro — unlimited summaries</span></span>
+    </div>`;
+  } else if (remaining > 0) {
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--teal);font-size:0.9rem">✦</span>
+      <div>
+        <div style="color:var(--text-dim)">AI summary will be generated automatically.</div>
+        <div style="color:var(--text-muted);margin-top:3px;font-size:0.75rem">
+          <span style="color:var(--teal);font-weight:600">${remaining}</span> of ${limit} free summaries remaining this month
+          · <a href="/pricing.html" style="color:var(--gold);text-decoration:underline">Upgrade to Pro</a> for unlimited
+        </div>
+      </div>
+    </div>`;
+  } else {
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:8px">
+      <span style="color:var(--text-muted);font-size:0.9rem">✦</span>
+      <div>
+        <div style="color:var(--text-muted)">Free summary limit reached this month.</div>
+        <div style="color:var(--text-muted);margin-top:3px;font-size:0.75rem">
+          Paper will be posted without an AI summary.
+          <a href="/pricing.html" style="color:var(--gold);text-decoration:underline">Upgrade to Pro</a> for unlimited summaries.
+        </div>
+      </div>
+    </div>`;
+  }
+  el.style.display = '';
 }
 
 async function generateAndSaveSummary(paper) {
