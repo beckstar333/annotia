@@ -348,22 +348,28 @@ let fetchedPaper = null;
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 async function init() {
-  // Get Supabase config with timeout
+  // Get Supabase config
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const resp = await fetch('/api/config', { signal: controller.signal });
-    clearTimeout(timeout);
-    const { url, anonKey } = await resp.json();
-    if (url && anonKey) {
-      supabase = window.supabase.createClient(url, anonKey);
+    const resp = await fetch('/api/config');
+    if (resp.ok) {
+      const { url, anonKey } = await resp.json();
+      if (url && anonKey && window.supabase) {
+        supabase = window.supabase.createClient(url, anonKey);
+      }
     }
   } catch(e) {
-    console.log('Supabase not configured or timeout, running in search-only mode');
+    console.log('Supabase not available:', e.message);
   }
 
-  loadFeed();
+  await loadFeed();
   setupSearch();
+}
+
+// Run init after DOM + Supabase CDN are ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
 }
 
 // ─── Search ──────────────────────────────────────────────────────────────────
@@ -431,21 +437,19 @@ async function loadFeed() {
 
   if (supabase) {
     try {
-      const feedPromise = supabase
+      const result = await supabase
         .from('papers')
         .select('*, comments(count)')
         .order('created_at', { ascending: false })
         .limit(20);
 
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
-      const { data: papers, error } = await Promise.race([feedPromise, timeoutPromise]);
-
-      if (!error && papers && papers.length > 0) {
+      const papers = result.data;
+      if (papers && papers.length > 0) {
         container.innerHTML = papers.map(p => renderFeedCard(p)).join('');
         return;
       }
     } catch(e) {
-      console.log('Feed query error or timeout:', e);
+      console.log('Feed query error:', e);
     }
   }
 
@@ -664,8 +668,7 @@ function timeAgo(dateStr) {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
-// ─── Boot ────────────────────────────────────────────────────────────────────
-init();
+// Boot is handled above in init() with DOMContentLoaded check
 </script>
 </body>
 </html>
