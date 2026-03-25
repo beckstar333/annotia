@@ -183,6 +183,56 @@
       <div id="userCollections"><div style="color:var(--text-muted);font-size:0.85rem">No collections yet.</div></div>
     </div>
 
+    <!-- Paper Alerts (Pro) -->
+    <div class="card" id="alertsCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:0">Paper Alerts <span style="font-size:0.62rem;color:var(--gold);margin-left:6px">✦ PRO</span></div>
+        <button class="btn btn-ghost" onclick="showAddAlert()" id="addAlertBtn" style="font-size:0.7rem;padding:6px 12px;display:none">+ Add alert</button>
+      </div>
+      <div id="alertsContent"><div style="color:var(--text-muted);font-size:0.85rem">Upgrade to Pro to set up alerts for new papers in your field.</div></div>
+      <div id="addAlertForm" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div class="form-row" style="margin-bottom:10px">
+          <div>
+            <label class="form-label">Search query</label>
+            <input class="form-input" id="alertQuery" placeholder='e.g. "cognitive bias" or "CRISPR"' />
+          </div>
+          <div>
+            <label class="form-label">Field (optional)</label>
+            <select class="form-input form-select" id="alertField">
+              <option value="">Any field</option>
+              <option>Psychology</option>
+              <option>Neuroscience</option>
+              <option>Medicine</option>
+              <option>Biology</option>
+              <option>Computer Science</option>
+              <option>Economics</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-ghost" onclick="hideAddAlert()" style="font-size:0.7rem;padding:6px 12px">Cancel</button>
+          <button class="btn btn-gold" onclick="createAlert()" style="font-size:0.7rem;padding:6px 12px">Create alert</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Citation Export (Pro) -->
+    <div class="card" id="exportCard">
+      <div class="card-title">Export Citations <span style="font-size:0.62rem;color:var(--gold);margin-left:6px">✦ PRO</span></div>
+      <div id="exportContent">
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:14px">Export your saved papers as formatted citations for your CV, papers, or bibliography.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="exportButtons">
+          <button class="btn btn-ghost" onclick="exportCitations('apa')" style="font-size:0.72rem;padding:7px 14px">APA</button>
+          <button class="btn btn-ghost" onclick="exportCitations('mla')" style="font-size:0.72rem;padding:7px 14px">MLA</button>
+          <button class="btn btn-ghost" onclick="exportCitations('bibtex')" style="font-size:0.72rem;padding:7px 14px">BibTeX</button>
+        </div>
+        <div id="exportResult" style="display:none;margin-top:14px">
+          <textarea id="exportText" readonly style="width:100%;min-height:120px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75rem;line-height:1.6;resize:vertical;outline:none"></textarea>
+          <button class="btn btn-gold" onclick="copyExport()" style="margin-top:8px;font-size:0.7rem;padding:6px 14px">Copy to clipboard</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -211,6 +261,7 @@ async function init() {
   document.getElementById('navSignOut').style.display = '';
   await loadProfile();
   await loadDashboard();
+  await loadAlerts();
 
   // Pro success redirect
   if (window.location.search.includes('pro=success')) {
@@ -387,6 +438,100 @@ function timeAgo(dateStr) {
   const days = Math.floor(hrs / 24);
   if (days < 30) return `${days}d ago`;
   return `${Math.floor(days / 30)}mo ago`;
+}
+
+// ─── Alerts ──────────────────────────────────────────────────────────────────
+async function loadAlerts() {
+  if (!profile?.is_pro) return;
+  document.getElementById('addAlertBtn').style.display = '';
+
+  const { data: alerts } = await sb.from('paper_alerts')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  const el = document.getElementById('alertsContent');
+  if (!alerts || alerts.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem">No alerts set up yet. Add one to get notified about new papers.</div>';
+    return;
+  }
+
+  el.innerHTML = alerts.map(a => `
+    <div class="saved-item">
+      <div style="flex:1">
+        <div class="saved-title" style="cursor:default">"${a.query}"${a.field ? ` <span style="font-size:0.72rem;color:var(--text-muted)">in ${a.field}</span>` : ''}</div>
+        <div class="saved-meta">${a.is_active ? '<span style="color:var(--green)">● Active</span>' : '<span style="color:var(--text-muted)">○ Paused</span>'} · Created ${timeAgo(a.created_at)}</div>
+      </div>
+      <button onclick="deleteAlert('${a.id}')" style="font-size:0.7rem;color:var(--text-muted);background:none;border:none;cursor:pointer;font-family:'DM Mono',monospace">✕</button>
+    </div>
+  `).join('');
+}
+
+function showAddAlert() {
+  document.getElementById('addAlertForm').style.display = '';
+  document.getElementById('alertQuery').value = '';
+  document.getElementById('alertField').value = '';
+}
+function hideAddAlert() { document.getElementById('addAlertForm').style.display = 'none'; }
+
+async function createAlert() {
+  const query = document.getElementById('alertQuery').value.trim();
+  if (!query) return;
+  const field = document.getElementById('alertField').value || null;
+
+  await sb.from('paper_alerts').insert({ user_id: userId, query, field });
+  hideAddAlert();
+  loadAlerts();
+  showToast('Alert created');
+}
+
+async function deleteAlert(id) {
+  await sb.from('paper_alerts').delete().eq('id', id);
+  loadAlerts();
+  showToast('Alert removed');
+}
+
+// ─── Citation Export ─────────────────────────────────────────────────────────
+async function exportCitations(format) {
+  if (!profile?.is_pro) {
+    if (confirm('Citation export is a Pro feature. Want to see pricing?')) {
+      window.location.href = '/pricing.html';
+    }
+    return;
+  }
+
+  const btns = document.querySelectorAll('#exportButtons button');
+  btns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+
+  try {
+    const resp = await fetch(`/api/export-citations?user_id=${userId}&format=${format}`);
+    const data = await resp.json();
+
+    if (data.error) {
+      showToast(data.error);
+      return;
+    }
+
+    if (data.count === 0) {
+      showToast('No saved papers to export');
+      return;
+    }
+
+    document.getElementById('exportText').value = data.citations;
+    document.getElementById('exportResult').style.display = '';
+    showToast(`${data.count} citations exported in ${format.toUpperCase()} format`);
+  } catch(e) {
+    showToast('Export failed');
+  } finally {
+    btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+  }
+}
+
+function copyExport() {
+  const text = document.getElementById('exportText');
+  text.select();
+  document.execCommand('copy');
+  showToast('Copied to clipboard');
 }
 
 function showToast(msg) {

@@ -257,6 +257,56 @@
       <input class="search-input" id="searchInput" type="text" placeholder="Search papers by topic, title, or DOI..." />
     </div>
 
+    <!-- Advanced filters (Pro) -->
+    <div id="advancedFilters" style="display:none;margin-bottom:20px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase">Advanced Filters</span>
+        <span style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--gold);letter-spacing:0.06em">✦ PRO</span>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div>
+          <label style="font-size:0.7rem;color:var(--text-muted);display:block;margin-bottom:4px">Year from</label>
+          <input type="number" id="filterYearFrom" placeholder="2020" min="1900" max="2026" style="width:80px;padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:inherit;font-size:0.8rem;outline:none" />
+        </div>
+        <div>
+          <label style="font-size:0.7rem;color:var(--text-muted);display:block;margin-bottom:4px">Year to</label>
+          <input type="number" id="filterYearTo" placeholder="2026" min="1900" max="2026" style="width:80px;padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:inherit;font-size:0.8rem;outline:none" />
+        </div>
+        <div>
+          <label style="font-size:0.7rem;color:var(--text-muted);display:block;margin-bottom:4px">Field</label>
+          <select id="filterField" style="padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:inherit;font-size:0.8rem;outline:none;cursor:pointer">
+            <option value="">All fields</option>
+            <option>Psychology</option>
+            <option>Neuroscience</option>
+            <option>Medicine</option>
+            <option>Biology</option>
+            <option>Computer Science</option>
+            <option>Economics</option>
+            <option>Education</option>
+            <option>Environmental Science</option>
+            <option>Physics</option>
+            <option>Chemistry</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.7rem;color:var(--text-muted);display:block;margin-bottom:4px">Sort by</label>
+          <select id="filterSort" style="padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:inherit;font-size:0.8rem;outline:none;cursor:pointer">
+            <option value="relevance">Relevance</option>
+            <option value="date">Most recent</option>
+            <option value="citations">Most cited</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <label style="font-size:0.75rem;color:var(--text-dim);display:flex;align-items:center;gap:5px;cursor:pointer;padding-bottom:6px">
+            <input type="checkbox" id="filterOAOnly" checked style="accent-color:var(--gold)" /> Open access only
+          </label>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <button onclick="toggleAdvancedFilters()" id="filterToggle" style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);background:none;border:none;cursor:pointer;letter-spacing:0.06em;padding:0">▸ Advanced filters <span id="filterProTag" style="font-size:0.6rem;color:var(--gold);margin-left:4px">PRO</span></button>
+    </div>
+
     <!-- Tabs -->
     <div class="tabs">
       <button class="tab active" data-tab="feed" onclick="switchTab('feed')">Feed</button>
@@ -407,6 +457,8 @@ async function init() {
   await loadFeed();
   setupSearch();
   checkAuth();
+  // Pro status checked after auth resolves
+  setTimeout(checkProStatus, 1500);
 }
 
 // Run init after DOM + Supabase CDN are ready
@@ -414,6 +466,36 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
   init();
+}
+
+// ─── Filters ─────────────────────────────────────────────────────────────────
+let filtersVisible = false;
+let userIsPro = false;
+
+async function checkProStatus() {
+  if (!sb || !currentUser) return;
+  const { data } = await sb.from('profiles').select('is_pro').eq('id', currentUser.id).single();
+  userIsPro = data?.is_pro || false;
+  // Hide Pro tag if already Pro
+  if (userIsPro) {
+    const tag = document.getElementById('filterProTag');
+    if (tag) tag.style.display = 'none';
+  }
+}
+
+function toggleAdvancedFilters() {
+  if (!userIsPro && !filtersVisible) {
+    // Show upsell
+    if (confirm('Advanced filters are a Pro feature ($7/mo). Want to see pricing?')) {
+      window.location.href = '/pricing.html';
+    }
+    return;
+  }
+  filtersVisible = !filtersVisible;
+  document.getElementById('advancedFilters').style.display = filtersVisible ? '' : 'none';
+  document.getElementById('filterToggle').innerHTML = filtersVisible
+    ? '▾ Hide filters'
+    : '▸ Advanced filters' + (userIsPro ? '' : ' <span style="font-size:0.6rem;color:var(--gold);margin-left:4px">PRO</span>');
 }
 
 // ─── Search ──────────────────────────────────────────────────────────────────
@@ -446,16 +528,42 @@ async function performSearch(query) {
   container.innerHTML = '<div class="loading"><span class="spinner"></span> Searching OpenAlex & Semantic Scholar...</div>';
 
   try {
-    const resp = await fetch(`/api/search?q=${encodeURIComponent(query)}&per_page=15`);
+    let url = `/api/search?q=${encodeURIComponent(query)}&per_page=15`;
+
+    // Apply advanced filters if Pro and visible
+    if (userIsPro && filtersVisible) {
+      const yearFrom = document.getElementById('filterYearFrom')?.value;
+      const yearTo = document.getElementById('filterYearTo')?.value;
+      const field = document.getElementById('filterField')?.value;
+      const sort = document.getElementById('filterSort')?.value;
+      if (yearFrom) url += `&year_from=${yearFrom}`;
+      if (yearTo) url += `&year_to=${yearTo}`;
+      if (field) url += `&field=${encodeURIComponent(field)}`;
+      if (sort) url += `&sort=${sort}`;
+    }
+
+    const resp = await fetch(url);
     const data = await resp.json();
 
     if (data.results && data.results.length > 0) {
+      // Apply client-side year filtering since the API might not support it
+      let results = data.results;
+      if (userIsPro && filtersVisible) {
+        const yf = parseInt(document.getElementById('filterYearFrom')?.value);
+        const yt = parseInt(document.getElementById('filterYearTo')?.value);
+        const sort = document.getElementById('filterSort')?.value;
+        if (yf) results = results.filter(p => (p.year || 0) >= yf);
+        if (yt) results = results.filter(p => (p.year || 9999) <= yt);
+        if (sort === 'citations') results.sort((a, b) => (b.citation_count || 0) - (a.citation_count || 0));
+        if (sort === 'date') results.sort((a, b) => (b.published_date || '').localeCompare(a.published_date || ''));
+      }
+
       container.innerHTML = `
         <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px">
-          ${data.total} results for "<strong style="color:var(--text)">${query}</strong>"
+          ${results.length} results for "<strong style="color:var(--text)">${query}</strong>"
           from ${data.sources.map(s => s.source.replace('_', ' ')).join(' & ')}
         </div>
-        ${data.results.map(p => renderPaperCard(p)).join('')}
+        ${results.map(p => renderPaperCard(p)).join('')}
       `;
     } else {
       container.innerHTML = `
