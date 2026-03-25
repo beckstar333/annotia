@@ -342,7 +342,7 @@
 
 <script>
 // ─── State ───────────────────────────────────────────────────────────────────
-let supabase = null;
+let sb = null;
 let currentTab = 'feed';
 let fetchedPaper = null;
 
@@ -354,7 +354,7 @@ async function init() {
     if (resp.ok) {
       const { url, anonKey } = await resp.json();
       if (url && anonKey && window.supabase) {
-        supabase = window.supabase.createClient(url, anonKey);
+        sb = window.supabase.createClient(url, anonKey);
       }
     }
   } catch(e) {
@@ -435,9 +435,9 @@ function searchFor(query) {
 async function loadFeed() {
   const container = document.getElementById('feedContent');
 
-  if (supabase) {
+  if (sb) {
     try {
-      const result = await supabase
+      const result = await sb
         .from('papers')
         .select('*, comments(count)')
         .order('created_at', { ascending: false })
@@ -621,14 +621,14 @@ async function fetchPaperForPost() {
 }
 
 async function submitPaper() {
-  if (!fetchedPaper || !supabase) {
+  if (!fetchedPaper || !sb) {
     alert('Supabase not configured. Paper cannot be saved yet.');
     closePostModal();
     return;
   }
 
   const p = fetchedPaper;
-  const { error } = await supabase.from('papers').upsert({
+  const { error } = await sb.from('papers').upsert({
     doi: p.doi,
     title: p.title,
     authors: (p.authors || []).join(', '),
