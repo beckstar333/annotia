@@ -143,8 +143,12 @@ async function init() {
   if (!sb) { document.getElementById('loadingScreen').innerHTML = 'Service unavailable.'; return; }
 
   const { data: { user } } = await sb.auth.getUser();
-  if (!user || !ADMIN_EMAILS.includes(user.email)) {
-    document.getElementById('loadingScreen').innerHTML = '<div style="text-align:center"><div style="font-size:1.2rem;margin-bottom:8px">🔒</div>Access denied.<br><a href="/" style="color:var(--gold);margin-top:12px;display:inline-block">← Back to Annotia</a></div>';
+  if (!user) {
+    document.getElementById('loadingScreen').innerHTML = '<div style="text-align:center"><div style="font-size:1.2rem;margin-bottom:8px">🔒</div>Not signed in.<br><a href="/" style="color:var(--gold);margin-top:12px;display:inline-block">Sign in first →</a></div>';
+    return;
+  }
+  if (!ADMIN_EMAILS.includes(user.email)) {
+    document.getElementById('loadingScreen').innerHTML = '<div style="text-align:center"><div style="font-size:1.2rem;margin-bottom:8px">🔒</div>Access denied.<br><span style="font-size:0.75rem;color:var(--text-muted)">Signed in as ' + user.email + '</span><br><a href="/" style="color:var(--gold);margin-top:12px;display:inline-block">← Back to Annotia</a></div>';
     return;
   }
 
