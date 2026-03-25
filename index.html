@@ -548,6 +548,14 @@ function renderFeedCard(p) {
   if (p.is_open_access) badges.push('<span class="badge badge-oa">OA</span>');
   if (p.is_preprint) badges.push('<span class="badge badge-preprint">Preprint</span>');
   if (p.is_retracted) badges.push('<span class="badge" style="background:rgba(208,96,96,0.15);color:var(--red)">Retracted</span>');
+  if (p.summary_what_studied) badges.push('<span class="badge" style="background:var(--teal-dim);color:var(--teal)">AI Summary</span>');
+
+  const summaryPreview = p.summary_what_studied
+    ? `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin:10px 0;font-size:0.78rem;color:var(--text-dim);line-height:1.55">
+        <span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--teal);letter-spacing:0.06em;text-transform:uppercase">AI Summary</span>
+        <div style="margin-top:4px">${(p.summary_what_studied || '').slice(0, 180)}${(p.summary_what_studied || '').length > 180 ? '...' : ''}</div>
+      </div>`
+    : '';
 
   return `
     <div class="paper-card" onclick="window.location.href='/demo.html?doi=${encodeURIComponent(p.doi)}'">
@@ -558,7 +566,8 @@ function renderFeedCard(p) {
         ${p.year ? `<span style="color:var(--border-light)">·</span><span>${p.year}</span>` : ''}
         ${badges.join(' ')}
       </div>
-      ${p.abstract ? `<div class="paper-abstract">${p.abstract}</div>` : ''}
+      ${summaryPreview}
+      ${!p.summary_what_studied && p.abstract ? `<div class="paper-abstract">${p.abstract}</div>` : ''}
       <div class="paper-footer">
         <div class="stat"><span style="color:var(--teal)">💬</span> ${commentCount} comment${commentCount !== 1 ? 's' : ''}</div>
         ${p.confidence_score_avg ? `<div class="stat"><span style="color:var(--gold)">★</span> ${Number(p.confidence_score_avg).toFixed(1)} confidence</div>` : ''}
@@ -670,6 +679,10 @@ async function submitPaper() {
     return;
   }
 
+  const btn = document.getElementById('postSubmitBtn');
+  btn.textContent = 'Posting...';
+  btn.disabled = true;
+
   const p = fetchedPaper;
   const { error } = await sb.from('papers').upsert({
     doi: p.doi,
@@ -690,12 +703,81 @@ async function submitPaper() {
     console.error('Save error:', error);
     document.getElementById('postError').textContent = 'Failed to save: ' + error.message;
     document.getElementById('postError').style.display = '';
+    btn.textContent = 'Post to Feed';
+    btn.disabled = false;
     return;
+  }
+
+  // Generate AI summary if the user has remaining quota
+  if (p.abstract) {
+    btn.textContent = 'Generating AI summary...';
+    const canSummarize = await checkSummaryQuota();
+    if (canSummarize) {
+      await generateAndSaveSummary(p);
+    }
   }
 
   closePostModal();
   switchTab('feed');
   loadFeed();
+}
+
+async function checkSummaryQuota() {
+  if (!currentUser || !sb) return false;
+
+  // Check if user is Pro (unlimited)
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', currentUser.id).single();
+  // For now, treat any user as free tier — Pro check can be added when Stripe is wired
+  // Count summaries this month
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const { count } = await sb.from('papers')
+    .select('*', { count: 'exact', head: true })
+    .not('summary_what_studied', 'is', null)
+    .gte('updated_at', startOfMonth.toISOString());
+
+  // Free tier: 5 per month (this is a simple global check for now)
+  return (count || 0) < 5;
+}
+
+async function generateAndSaveSummary(paper) {
+  try {
+    const resp = await fetch('/api/summarize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        doi: paper.doi,
+        metadata: {
+          title: paper.title,
+          authors: (paper.authors || []).join(', '),
+          journal: paper.journal || '',
+          year: paper.year || '',
+          abstract: paper.abstract || '',
+        },
+      }),
+    });
+
+    if (!resp.ok) return;
+    const { summaryData } = await resp.json();
+    if (!summaryData) return;
+
+    // Save summary to papers table
+    await sb.from('papers').update({
+      summary_what_studied: summaryData.whatStudied || null,
+      summary_how_studied: summaryData.howStudied || null,
+      summary_what_found: summaryData.whatFound || null,
+      summary_confidence: summaryData.confidence || null,
+      summary_real_world: summaryData.realWorld || null,
+      summary_why_care: summaryData.whyCare || null,
+      summary_jargon: summaryData.jargonTerms || null,
+      summary_count: 1,
+    }).eq('doi', paper.doi);
+
+  } catch (e) {
+    console.log('Summary generation failed:', e.message);
+  }
 }
 
 // ─── Utils ───────────────────────────────────────────────────────────────────
