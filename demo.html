@@ -316,6 +316,115 @@
     line-height: 1.8; color: var(--text-dim); font-style: italic;
   }
 
+  /* Discussion Section */
+  .discussion {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; margin-bottom: 2rem; overflow: hidden;
+  }
+  .discussion-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .discussion-title-row { display: flex; align-items: center; gap: 0.6rem; }
+  .discussion-label {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .discussion-icon { font-size: 0.85rem; }
+  .discussion-count {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    color: var(--text-muted); letter-spacing: 0.04em;
+  }
+  .comment-auth-prompt {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem;
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    color: var(--text-muted); border-bottom: 1px solid var(--border);
+  }
+  .comment-login-btn {
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    padding: 0.3rem 0.8rem; background: var(--gold); border: none;
+    color: var(--bg); cursor: pointer; border-radius: 2px; font-weight: 500;
+  }
+  #commentFormLoggedIn {
+    padding: 1.25rem; border-bottom: 1px solid var(--border);
+  }
+  .comment-textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+    padding: 0.75rem 1rem; border-radius: 2px; outline: none;
+    resize: vertical; min-height: 80px; transition: border-color 0.2s;
+  }
+  .comment-textarea:focus { border-color: var(--gold); }
+  .comment-textarea::placeholder { color: var(--text-muted); }
+  .comment-form-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 0.5rem;
+  }
+  .comment-char-count {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--text-muted);
+  }
+  .btn-comment-submit {
+    font-family: 'DM Mono', monospace; font-size: 0.68rem;
+    padding: 0.45rem 1rem; background: var(--gold); border: none;
+    color: var(--bg); cursor: pointer; letter-spacing: 0.06em;
+    text-transform: uppercase; font-weight: 500; border-radius: 2px;
+  }
+  .btn-comment-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .comment-list { padding: 0; }
+  .comment-item {
+    padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+  }
+  .comment-item:last-child { border-bottom: none; }
+  .comment-meta {
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+  }
+  .comment-author { font-size: 0.82rem; font-weight: 500; color: var(--text); }
+  .comment-role-badge {
+    font-family: 'DM Mono', monospace; font-size: 0.55rem;
+    padding: 0.1rem 0.4rem; border-radius: 2px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: var(--teal-dim); color: var(--teal);
+    border: 1px solid rgba(90,180,200,0.3);
+  }
+  .comment-time {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    color: var(--text-muted); margin-left: auto;
+  }
+  .comment-body {
+    font-size: 0.88rem; line-height: 1.7; color: var(--text-dim);
+    white-space: pre-wrap;
+  }
+  .comment-actions { margin-top: 0.5rem; }
+  .reply-btn {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    color: var(--text-muted); background: none; border: none;
+    cursor: pointer; padding: 0; letter-spacing: 0.04em;
+  }
+  .reply-btn:hover { color: var(--gold); }
+  .comment-replies {
+    margin-left: 1.5rem; padding-left: 1rem;
+    border-left: 2px solid var(--border);
+  }
+  .reply-form { margin-top: 0.75rem; }
+  .reply-form textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    padding: 0.6rem 0.8rem; border-radius: 2px; outline: none;
+    resize: none; min-height: 60px;
+  }
+  .reply-form textarea:focus { border-color: var(--gold); }
+  .reply-form textarea::placeholder { color: var(--text-muted); }
+  .reply-form-actions {
+    display: flex; gap: 0.5rem; margin-top: 0.4rem; justify-content: flex-end;
+  }
+  .comment-empty {
+    padding: 2rem 1.25rem; text-align: center;
+    font-family: 'DM Mono', monospace; font-size: 0.75rem;
+    color: var(--text-muted); letter-spacing: 0.04em;
+  }
+
   /* Toast */
   .toast {
     position: fixed; bottom: 2rem; left: 50%;
@@ -337,6 +446,297 @@
     color: var(--text-muted); letter-spacing: 0.08em;
   }
   .footer-text a { color: var(--gold); text-decoration: none; }
+
+  /* ── Retraction Banner ── */
+  .retraction-banner {
+    background: var(--red-dim); border: 1px solid rgba(208,96,96,0.4);
+    border-radius: 4px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+    display: flex; gap: 0.75rem; align-items: flex-start;
+  }
+  .retraction-banner .warning-text {
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    color: var(--red); line-height: 1.6; letter-spacing: 0.02em;
+  }
+  .retraction-banner .warning-text a { color: var(--red); text-decoration: underline; }
+  .badge-retracted { background: var(--red-dim); color: var(--red); border: 1px solid rgba(208,96,96,0.4); animation: pulse-red 2s infinite; }
+  @keyframes pulse-red { 0%,100%{ opacity:1; } 50%{ opacity:0.7; } }
+
+  /* ── Flag Modal ── */
+  .flag-modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7);
+    z-index:1001; align-items:center; justify-content:center; backdrop-filter:blur(4px);
+  }
+  .flag-modal-overlay.visible { display:flex; }
+  .flag-modal {
+    background:var(--surface); border:1px solid var(--border-light);
+    border-radius:6px; padding:2rem; width:100%; max-width:480px; margin:1rem; position:relative;
+  }
+  .flag-modal h3 {
+    font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:600;
+    color:var(--text); margin-bottom:0.5rem;
+  }
+  .flag-modal p { font-size:0.82rem; color:var(--text-dim); margin-bottom:1.25rem; }
+  .flag-reason-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:1.25rem;
+  }
+  .flag-reason-btn {
+    font-family:'DM Mono',monospace; font-size:0.68rem; padding:0.55rem 0.75rem;
+    background:var(--surface2); border:1px solid var(--border); color:var(--text-dim);
+    cursor:pointer; border-radius:2px; text-align:left; transition:all 0.2s;
+    letter-spacing:0.04em;
+  }
+  .flag-reason-btn:hover { border-color:var(--gold); color:var(--text); }
+  .flag-reason-btn.selected { border-color:var(--red); color:var(--red); background:var(--red-dim); }
+  .flag-detail-area {
+    width:100%; background:var(--surface2); border:1px solid var(--border);
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.85rem;
+    padding:0.7rem 1rem; border-radius:2px; outline:none; resize:vertical;
+    min-height:70px; margin-bottom:1rem;
+  }
+  .flag-detail-area:focus { border-color:var(--gold); }
+  .flag-detail-area::placeholder { color:var(--text-muted); }
+  .flag-actions { display:flex; gap:0.5rem; justify-content:flex-end; }
+
+  /* ── Comment Voting ── */
+  .comment-vote-group {
+    display:inline-flex; align-items:center; gap:0.25rem; margin-right:0.75rem;
+    vertical-align:middle;
+  }
+  .vote-btn {
+    font-family:'DM Mono',monospace; font-size:0.72rem; background:none;
+    border:1px solid var(--border); color:var(--text-muted); cursor:pointer;
+    padding:0.15rem 0.4rem; border-radius:2px; transition:all 0.15s; line-height:1;
+  }
+  .vote-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .vote-btn.active-up { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+  .vote-btn.active-down { border-color:var(--red); color:var(--red); background:var(--red-dim); }
+  .vote-score {
+    font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--text-dim);
+    min-width:1.2em; text-align:center;
+  }
+
+  /* ── Confidence Widget ── */
+  .confidence-widget {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:4px; padding:1.25rem; margin-bottom:2rem;
+  }
+  .confidence-widget-label {
+    font-family:'DM Mono',monospace; font-size:0.62rem; text-transform:uppercase;
+    letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.75rem;
+  }
+  .confidence-scores { display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem; }
+  .confidence-score-btn {
+    width:40px; height:40px; border-radius:50%; border:1px solid var(--border);
+    background:var(--surface2); color:var(--text-dim); cursor:pointer;
+    font-family:'DM Mono',monospace; font-size:0.85rem; font-weight:500;
+    transition:all 0.15s; display:flex; align-items:center; justify-content:center;
+  }
+  .confidence-score-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .confidence-score-btn.selected {
+    border-color:var(--gold); color:var(--bg); background:var(--gold); font-weight:700;
+  }
+  .confidence-aggregate {
+    display:flex; align-items:center; gap:1rem; margin-top:0.5rem;
+  }
+  .confidence-bar-track {
+    flex:1; height:6px; background:var(--surface2); border-radius:3px; overflow:hidden;
+  }
+  .confidence-bar-fill {
+    height:100%; background:var(--gold); border-radius:3px; transition:width 0.3s;
+  }
+  .confidence-avg-text {
+    font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--text-dim);
+    white-space:nowrap;
+  }
+
+  /* ── Keyword Search ── */
+  .search-mode-tabs {
+    display:flex; gap:0; margin-bottom:1rem; border-bottom:1px solid var(--border);
+  }
+  .search-mode-tab {
+    font-family:'DM Mono',monospace; font-size:0.65rem; padding:0.5rem 1.2rem;
+    color:var(--text-muted); cursor:pointer; letter-spacing:0.06em; text-transform:uppercase;
+    border:none; background:none; border-bottom:2px solid transparent;
+    margin-bottom:-1px; transition:all 0.2s;
+  }
+  .search-mode-tab:hover { color:var(--text-dim); }
+  .search-mode-tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+  .keyword-results {
+    text-align:left; margin-top:1rem; max-height:400px; overflow-y:auto;
+  }
+  .keyword-result-item {
+    padding:0.75rem 1rem; border:1px solid var(--border); border-radius:2px;
+    margin-bottom:0.5rem; cursor:pointer; transition:all 0.15s; background:var(--surface2);
+  }
+  .keyword-result-item:hover { border-color:var(--gold); }
+  .keyword-result-title {
+    font-size:0.88rem; color:var(--text); font-weight:500; margin-bottom:0.25rem;
+    line-height:1.4;
+  }
+  .keyword-result-meta {
+    font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--text-muted);
+    letter-spacing:0.04em;
+  }
+
+  /* ── Collections Panel ── */
+  .library-panel-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    z-index:900; transition:opacity 0.3s;
+  }
+  .library-panel-overlay.visible { display:block; }
+  .library-panel {
+    position:fixed; top:0; right:-420px; width:400px; max-width:90vw; height:100vh;
+    background:var(--surface); border-left:1px solid var(--border-light);
+    z-index:901; transition:right 0.3s ease; overflow-y:auto;
+    box-shadow:-4px 0 30px rgba(0,0,0,0.3);
+  }
+  .library-panel.open { right:0; }
+  .library-panel-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);
+    position:sticky; top:0; background:var(--surface); z-index:1;
+  }
+  .library-panel-title {
+    font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:600; color:var(--text);
+  }
+  .library-close-btn {
+    background:none; border:none; color:var(--text-muted); cursor:pointer;
+    font-size:1.2rem; padding:0.25rem;
+  }
+  .library-section { padding:1rem 1.5rem; }
+  .library-section-title {
+    font-family:'DM Mono',monospace; font-size:0.65rem; text-transform:uppercase;
+    letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.75rem;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .collection-item {
+    padding:0.6rem 0.8rem; border:1px solid var(--border); border-radius:2px;
+    margin-bottom:0.4rem; cursor:pointer; transition:all 0.15s; background:var(--surface2);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .collection-item:hover { border-color:var(--gold); }
+  .collection-item-name {
+    font-size:0.82rem; color:var(--text); font-weight:500;
+  }
+  .collection-item-count {
+    font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--text-muted);
+  }
+  .collection-paper-item {
+    padding:0.5rem 0.8rem; border-bottom:1px solid var(--border);
+    font-size:0.8rem; color:var(--text-dim); line-height:1.4;
+    display:flex; align-items:center; justify-content:space-between; gap:0.5rem;
+  }
+  .collection-paper-item:last-child { border-bottom:none; }
+  .collection-paper-title { flex:1; cursor:pointer; }
+  .collection-paper-title:hover { color:var(--gold); }
+  .collection-remove-btn {
+    background:none; border:none; color:var(--text-muted); cursor:pointer;
+    font-size:0.75rem; padding:0.2rem; flex-shrink:0;
+  }
+  .collection-remove-btn:hover { color:var(--red); }
+  .collection-item.drag-over {
+    border-color:var(--gold); background:var(--gold-dim);
+  }
+  .collection-paper-item[draggable="true"],
+  .saved-paper-drag {
+    cursor:grab;
+  }
+  .collection-paper-item[draggable="true"]:active,
+  .saved-paper-drag:active {
+    cursor:grabbing;
+  }
+  .saved-paper-drag.dragging {
+    opacity:0.4;
+  }
+  .new-collection-row {
+    display:flex; gap:0.4rem; margin-bottom:1rem;
+  }
+  .new-collection-input {
+    flex:1; background:var(--surface2); border:1px solid var(--border);
+    color:var(--text); font-size:0.8rem; padding:0.4rem 0.6rem;
+    border-radius:2px; outline:none; font-family:'DM Sans',sans-serif;
+  }
+  .new-collection-input:focus { border-color:var(--gold); }
+  .new-collection-input::placeholder { color:var(--text-muted); }
+  .add-to-collection-dropdown {
+    position:relative; display:inline-block; margin-left:0.5rem;
+  }
+  .add-to-collection-btn {
+    font-family:'DM Mono',monospace; font-size:0.72rem; padding:0.5rem 1rem;
+    background:transparent; border:1px solid var(--border-light);
+    color:var(--text-dim); cursor:pointer; border-radius:2px; transition:all 0.2s;
+  }
+  .add-to-collection-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .collection-dropdown-menu {
+    display:none; position:absolute; top:100%; left:0; margin-top:4px;
+    background:var(--surface); border:1px solid var(--border-light);
+    border-radius:4px; min-width:200px; z-index:200;
+    box-shadow:0 4px 20px rgba(0,0,0,0.3); overflow:hidden;
+  }
+  .collection-dropdown-menu.visible { display:block; }
+  .collection-dropdown-item {
+    padding:0.55rem 1rem; font-size:0.78rem; color:var(--text-dim);
+    cursor:pointer; transition:background 0.15s; border:none; background:none;
+    width:100%; text-align:left; font-family:'DM Sans',sans-serif;
+    display:block;
+  }
+  .collection-dropdown-item:hover { background:var(--surface2); color:var(--text); }
+
+  /* ── Profile Modal ── */
+  .profile-modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7);
+    z-index:1001; align-items:center; justify-content:center; backdrop-filter:blur(4px);
+  }
+  .profile-modal-overlay.visible { display:flex; }
+  .profile-modal {
+    background:var(--surface); border:1px solid var(--border-light);
+    border-radius:6px; padding:2rem; width:100%; max-width:460px; margin:1rem; position:relative;
+  }
+  .profile-modal h3 {
+    font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:600;
+    color:var(--text); margin-bottom:1.25rem;
+  }
+  .profile-field-label {
+    font-family:'DM Mono',monospace; font-size:0.65rem; text-transform:uppercase;
+    letter-spacing:0.1em; color:var(--text-muted); display:block; margin-bottom:0.35rem;
+  }
+  .profile-field-input {
+    width:100%; background:var(--surface2); border:1px solid var(--border);
+    color:var(--text); font-size:0.88rem; padding:0.65rem 0.9rem;
+    border-radius:2px; outline:none; margin-bottom:1rem;
+  }
+  .profile-field-input:focus { border-color:var(--gold); }
+  .profile-field-textarea {
+    width:100%; background:var(--surface2); border:1px solid var(--border);
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.85rem;
+    padding:0.7rem 1rem; border-radius:2px; outline:none; resize:vertical;
+    min-height:80px; margin-bottom:1rem;
+  }
+  .profile-field-textarea:focus { border-color:var(--gold); }
+
+  /* ── Avatar Picker ── */
+  .avatar-picker-label { margin-bottom:0.5rem; }
+  .avatar-picker-grid {
+    display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.25rem;
+  }
+  .avatar-option {
+    width:48px; height:48px; border-radius:50%;
+    border:2px solid var(--border); background:var(--surface2);
+    cursor:pointer; transition:all 0.15s;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.4rem;
+  }
+  .avatar-option:hover { border-color:var(--gold); transform:scale(1.1); }
+  .avatar-option.selected { border-color:var(--gold); background:var(--gold-dim); box-shadow:0 0 0 2px rgba(212,176,90,0.3); }
+
+  /* ── Role Badge Colors ── */
+  .role-clinician, .role-physician { background:var(--green-dim); color:var(--green); border:1px solid rgba(90,184,130,0.3); }
+  .role-researcher, .role-scholar { background:var(--teal-dim); color:var(--teal); border:1px solid rgba(90,180,200,0.3); }
+  .role-student { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,176,90,0.3); }
+  .role-journalist { background:var(--preprint-dim); color:var(--preprint); border:1px solid rgba(224,144,80,0.3); }
+  .role-psychologist { background:rgba(180,130,220,0.15); color:#b482dc; border:1px solid rgba(180,130,220,0.3); }
+  .role-philosopher { background:rgba(180,130,220,0.15); color:#b482dc; border:1px solid rgba(180,130,220,0.3); }
+  .role-curious { background:var(--surface2); color:var(--text-dim); border:1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -355,6 +755,8 @@
         <div id="userAvatar" style="width:32px;height:32px;border-radius:50%;background:var(--gold-dim);border:1px solid rgba(212,176,90,0.4);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--gold);cursor:pointer;font-weight:500;">?</div>
         <div id="userMenuDropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border-light);border-radius:4px;min-width:180px;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,0.3);overflow:hidden;">
           <div style="padding:0.75rem 1rem;font-size:0.82rem;color:var(--text);border-bottom:1px solid var(--border);"><div id="userMenuName">User</div><div id="userMenuEmail" style="font-size:0.68rem;color:var(--text-muted);font-family:'DM Mono',monospace;"></div></div>
+          <a id="myLibraryBtn" style="padding:0.65rem 1rem;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-dim);cursor:pointer;display:block;border-bottom:1px solid var(--border);">My Library</a>
+          <a id="editProfileBtn" style="padding:0.65rem 1rem;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-dim);cursor:pointer;display:block;border-bottom:1px solid var(--border);">Edit Profile</a>
           <a id="signOutBtn" style="padding:0.65rem 1rem;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-dim);cursor:pointer;display:block;">Sign out</a>
         </div>
       </div>
@@ -374,12 +776,17 @@
     <p class="hero-sub">Paste any paper DOI to get an instant AI-powered plain language summary — what they studied, what they found, and what it means for the real world.</p>
 
     <div class="search-box">
-      <label class="search-label">Paper DOI</label>
+      <div class="search-mode-tabs">
+        <button class="search-mode-tab active" onclick="setSearchMode('doi')">DOI Lookup</button>
+        <button class="search-mode-tab" onclick="setSearchMode('keyword')">Keyword Search</button>
+      </div>
+      <label class="search-label" id="searchLabel">Paper DOI</label>
       <div class="search-row">
         <input class="search-input" type="text" id="doiInput" placeholder="e.g. 10.1371/journal.pmed.1001482" />
-        <button class="btn-search" onclick="generateSummary()" id="generateBtn">Summarise</button>
+        <button class="btn-search" onclick="handleSearch()" id="generateBtn">Summarise</button>
       </div>
-      <div class="examples">
+      <div id="keywordResults" class="keyword-results" style="display:none;"></div>
+      <div class="examples" id="examplesSection">
         <div class="examples-label">Try an example</div>
         <div class="doi-chips">
           <span class="doi-chip" onclick="loadDoi('10.1126/science.aac4716')">Reproducibility Project — Science 2015</span>
@@ -411,8 +818,12 @@
 <div class="paper-result" id="paperResult">
   <div style="max-width:1100px; margin:0 auto; padding: 1.5rem 2rem 0;">
     <button class="back-btn" onclick="resetApp()">← Summarise another paper</button>
-    <div id="saveRow" style="display:none;margin-top:1rem;">
+    <div id="saveRow" style="display:none;margin-top:1rem;align-items:center;gap:0.5rem;flex-wrap:wrap;">
       <button id="savePaperBtn" style="font-family:'DM Mono',monospace;font-size:0.72rem;padding:0.5rem 1rem;background:transparent;border:1px solid var(--border-light);color:var(--text-dim);cursor:pointer;border-radius:2px;transition:all 0.2s;">&#128210; Save Paper</button>
+      <div class="add-to-collection-dropdown" id="addToCollectionWrap">
+        <button class="add-to-collection-btn" onclick="toggleCollectionDropdown()">&#128193; Add to Collection</button>
+        <div class="collection-dropdown-menu" id="collectionDropdownMenu"></div>
+      </div>
     </div>
     <div id="authPromptBanner" style="display:none;background:var(--gold-dim);border:1px solid rgba(212,176,90,0.3);border-radius:4px;padding:0.75rem 1rem;margin-top:1rem;align-items:center;justify-content:space-between;gap:1rem;">
       <span style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--gold);">Sign up free to save this paper</span>
@@ -421,6 +832,14 @@
   </div>
 
   <div style="max-width:1100px; margin:0 auto; padding: 0 2rem;">
+
+    <div id="retractionBanner" class="retraction-banner" style="display:none">
+      <div style="font-size:1.2rem;">&#9888;</div>
+      <div class="warning-text">
+        <strong>THIS PAPER HAS BEEN RETRACTED.</strong><br>
+        <span id="retractionDetail">This paper was formally retracted by the publisher. Findings should not be cited or relied upon.</span>
+      </div>
+    </div>
 
     <div id="preprintWarning" class="preprint-warning" style="display:none">
       <div>⚠</div>
@@ -475,7 +894,7 @@
             <div class="section-label">How Confident Should We Be</div>
             <div class="section-text" id="confidence"></div>
           </div>
-          <button class="flag-btn" onclick="showToast('Thank you — flagged for review')">⚑ Flag an error in this summary</button>
+          <button class="flag-btn" onclick="openFlagModal()">⚑ Flag an error in this summary</button>
         </div>
 
         <div class="tab-content" id="tab-jargon">
@@ -502,6 +921,57 @@
       <div class="abstract-text" id="abstractText"></div>
     </div>
 
+    <!-- Confidence Widget -->
+    <div class="confidence-widget" id="confidenceWidget">
+      <div class="confidence-widget-label">Community Confidence Rating</div>
+      <div class="confidence-scores" id="confidenceScores">
+        <button class="confidence-score-btn" data-score="1" onclick="submitConfidenceVote(1)">1</button>
+        <button class="confidence-score-btn" data-score="2" onclick="submitConfidenceVote(2)">2</button>
+        <button class="confidence-score-btn" data-score="3" onclick="submitConfidenceVote(3)">3</button>
+        <button class="confidence-score-btn" data-score="4" onclick="submitConfidenceVote(4)">4</button>
+        <button class="confidence-score-btn" data-score="5" onclick="submitConfidenceVote(5)">5</button>
+        <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text-muted);margin-left:0.5rem;">1 = low · 5 = high</span>
+      </div>
+      <div class="confidence-aggregate" id="confidenceAggregate" style="display:none;">
+        <div class="confidence-bar-track"><div class="confidence-bar-fill" id="confidenceBarFill" style="width:0%"></div></div>
+        <span class="confidence-avg-text" id="confidenceAvgText">—</span>
+      </div>
+    </div>
+
+    <!-- Discussion -->
+    <div class="discussion" id="discussionSection">
+      <div class="discussion-header">
+        <div class="discussion-title-row">
+          <span class="discussion-icon">&#128172;</span>
+          <span class="discussion-label">Discussion</span>
+        </div>
+        <span class="discussion-count" id="commentCount">0 comments</span>
+      </div>
+
+      <div id="commentFormArea">
+        <div id="commentFormAuth" style="display:none;">
+          <div class="comment-auth-prompt">
+            <span>Log in to join the discussion</span>
+            <button class="comment-login-btn" id="commentLoginBtn">Log In</button>
+          </div>
+        </div>
+        <div id="commentFormLoggedIn" style="display:none;">
+          <textarea id="commentBody" class="comment-textarea"
+            placeholder="Share your thoughts on this paper..."
+            maxlength="5000" rows="3"></textarea>
+          <div class="comment-form-footer">
+            <span class="comment-char-count" id="charCount">0 / 5,000</span>
+            <button class="btn-comment-submit" id="submitCommentBtn">Post Comment</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="commentList" class="comment-list"></div>
+      <div id="commentEmpty" class="comment-empty" style="display:none;">
+        No comments yet. Be the first to discuss this paper.
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -513,7 +983,200 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- FLAG MODAL -->
+<div class="flag-modal-overlay" id="flagModalOverlay">
+  <div class="flag-modal">
+    <button onclick="closeFlagModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem;">x</button>
+    <h3>Flag This Summary</h3>
+    <p>Select a reason for flagging. This helps improve future summaries.</p>
+    <div class="flag-reason-grid" id="flagReasonGrid">
+      <button class="flag-reason-btn" data-reason="inaccurate" onclick="selectFlagReason(this)">Inaccurate</button>
+      <button class="flag-reason-btn" data-reason="misleading" onclick="selectFlagReason(this)">Misleading</button>
+      <button class="flag-reason-btn" data-reason="outdated" onclick="selectFlagReason(this)">Outdated</button>
+      <button class="flag-reason-btn" data-reason="missing_context" onclick="selectFlagReason(this)">Missing Context</button>
+      <button class="flag-reason-btn" data-reason="biased" onclick="selectFlagReason(this)">Biased</button>
+      <button class="flag-reason-btn" data-reason="other" onclick="selectFlagReason(this)">Other</button>
+    </div>
+    <textarea class="flag-detail-area" id="flagDetail" placeholder="Optional: add more detail about the issue..." maxlength="2000"></textarea>
+    <div class="flag-actions">
+      <button class="reply-btn" onclick="closeFlagModal()">Cancel</button>
+      <button class="btn-comment-submit" id="submitFlagBtn" onclick="submitFlag()" disabled>Submit Flag</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIBRARY PANEL -->
+<div class="library-panel-overlay" id="libraryOverlay" onclick="closeLibraryPanel()"></div>
+<div class="library-panel" id="libraryPanel">
+  <div class="library-panel-header">
+    <span class="library-panel-title">My Library</span>
+    <button class="library-close-btn" onclick="closeLibraryPanel()">x</button>
+  </div>
+  <div class="library-section">
+    <div class="library-section-title">
+      <span>Collections</span>
+      <button class="reply-btn" onclick="document.getElementById('newCollectionRow').style.display='flex'" style="font-size:0.65rem;">+ New</button>
+    </div>
+    <div class="new-collection-row" id="newCollectionRow" style="display:none;">
+      <input class="new-collection-input" id="newCollectionName" placeholder="Collection name..." />
+      <button class="btn-comment-submit" style="font-size:0.62rem;padding:0.35rem 0.7rem;" onclick="createCollection()">Create</button>
+    </div>
+    <div id="collectionsList"></div>
+  </div>
+  <div class="library-section">
+    <div class="library-section-title"><span>Saved Papers</span></div>
+    <div id="savedPapersList" style="font-size:0.8rem;color:var(--text-dim);"></div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="profile-modal-overlay" id="profileModalOverlay">
+  <div class="profile-modal">
+    <button onclick="closeProfileModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem;">x</button>
+    <h3>Edit Profile</h3>
+    <label class="profile-field-label avatar-picker-label">Avatar</label>
+    <div class="avatar-picker-grid" id="avatarPickerGrid">
+      <div class="avatar-option" data-avatar="🧬" onclick="selectAvatar(this)">🧬</div>
+      <div class="avatar-option" data-avatar="🔬" onclick="selectAvatar(this)">🔬</div>
+      <div class="avatar-option" data-avatar="🧪" onclick="selectAvatar(this)">🧪</div>
+      <div class="avatar-option" data-avatar="📊" onclick="selectAvatar(this)">📊</div>
+      <div class="avatar-option" data-avatar="🧠" onclick="selectAvatar(this)">🧠</div>
+      <div class="avatar-option" data-avatar="💊" onclick="selectAvatar(this)">💊</div>
+      <div class="avatar-option" data-avatar="🩺" onclick="selectAvatar(this)">🩺</div>
+      <div class="avatar-option" data-avatar="📚" onclick="selectAvatar(this)">📚</div>
+      <div class="avatar-option" data-avatar="🌿" onclick="selectAvatar(this)">🌿</div>
+      <div class="avatar-option" data-avatar="⚛" onclick="selectAvatar(this)">⚛</div>
+      <div class="avatar-option" data-avatar="🦠" onclick="selectAvatar(this)">🦠</div>
+      <div class="avatar-option" data-avatar="🔭" onclick="selectAvatar(this)">🔭</div>
+      <div class="avatar-option" data-avatar="🧑‍🔬" onclick="selectAvatar(this)">🧑‍🔬</div>
+      <div class="avatar-option" data-avatar="🧑‍⚕️" onclick="selectAvatar(this)">🧑‍⚕️</div>
+      <div class="avatar-option" data-avatar="🧑‍🏫" onclick="selectAvatar(this)">🧑‍🏫</div>
+      <div class="avatar-option" data-avatar="🦉" onclick="selectAvatar(this)">🦉</div>
+    </div>
+    <label class="profile-field-label">Full Name</label>
+    <input class="profile-field-input" id="profileName" type="text" placeholder="Your name" />
+    <label class="profile-field-label">Institution</label>
+    <input class="profile-field-input" id="profileInstitution" type="text" placeholder="University, hospital, etc." />
+    <label class="profile-field-label">ORCID iD <span style="text-transform:none;letter-spacing:0;font-size:0.58rem;color:var(--text-muted);">(researchers &amp; scholars)</span></label>
+    <input class="profile-field-input" id="profileOrcid" type="text" placeholder="0000-0002-1825-0097" style="font-family:'DM Mono',monospace;font-size:0.82rem;" />
+    <label class="profile-field-label">Bio</label>
+    <textarea class="profile-field-textarea" id="profileBio" placeholder="Tell others about your background..." maxlength="1000"></textarea>
+    <label class="profile-field-label">Role</label>
+    <select class="profile-field-input" id="profileRole" style="cursor:pointer;">
+      <option value="">Select your role</option>
+      <option value="clinician">Clinician / Nurse Practitioner</option>
+      <option value="physician">Physician</option>
+      <option value="researcher">Researcher / Scientist</option>
+      <option value="psychologist">Psychologist</option>
+      <option value="scholar">Scholar / Academic</option>
+      <option value="philosopher">Philosopher</option>
+      <option value="student">Student</option>
+      <option value="journalist">Journalist / Science Communicator</option>
+      <option value="curious">Curious Non-Specialist</option>
+    </select>
+    <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.5rem;">
+      <button class="reply-btn" onclick="closeProfileModal()">Cancel</button>
+      <button class="btn-comment-submit" id="saveProfileBtn" onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  // ── Global helpers (moved out of IIFE for reuse) ──
+  function escHtmlGlobal(str) {
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ── Search Mode ──
+  var _searchMode = 'doi';
+
+  function setSearchMode(mode) {
+    _searchMode = mode;
+    document.querySelectorAll('.search-mode-tab').forEach(function(t) { t.classList.remove('active'); });
+    event.target.classList.add('active');
+    var label = document.getElementById('searchLabel');
+    var input = document.getElementById('doiInput');
+    var btn = document.getElementById('generateBtn');
+    var examples = document.getElementById('examplesSection');
+    var kwResults = document.getElementById('keywordResults');
+    if (mode === 'keyword') {
+      label.textContent = 'Search Keywords';
+      input.placeholder = 'e.g. reproducibility psychology';
+      btn.textContent = 'Search';
+      if (examples) examples.style.display = 'none';
+      kwResults.style.display = 'none';
+    } else {
+      label.textContent = 'Paper DOI';
+      input.placeholder = 'e.g. 10.1371/journal.pmed.1001482';
+      btn.textContent = 'Summarise';
+      if (examples) examples.style.display = 'block';
+      kwResults.style.display = 'none';
+    }
+  }
+
+  function handleSearch() {
+    if (_searchMode === 'keyword') {
+      keywordSearch();
+    } else {
+      generateSummary();
+    }
+  }
+
+  async function keywordSearch() {
+    var query = document.getElementById('doiInput').value.trim();
+    if (!query) { showToast('Please enter search keywords'); return; }
+    var btn = document.getElementById('generateBtn');
+    btn.disabled = true; btn.textContent = 'Searching...';
+    document.getElementById('errorCard').classList.remove('visible');
+
+    try {
+      var res = await fetch('https://api.crossref.org/works?query=' + encodeURIComponent(query) + '&rows=10');
+      if (!res.ok) throw new Error('Search failed');
+      var data = await res.json();
+      var items = data.message.items || [];
+
+      var container = document.getElementById('keywordResults');
+      container.innerHTML = '';
+      if (items.length === 0) {
+        container.innerHTML = '<div style="padding:1rem;font-size:0.82rem;color:var(--text-muted);">No results found.</div>';
+      } else {
+        items.forEach(function(item) {
+          var doi = item.DOI || '';
+          var title = (item.title && item.title[0]) || 'Untitled';
+          var authorList = item.author || [];
+          var authStr = authorList.slice(0, 3).map(function(a) { return (a.given || '') + ' ' + (a.family || ''); }).join(', ');
+          if (authorList.length > 3) authStr += ' et al.';
+          var journal = (item['container-title'] && item['container-title'][0]) || '';
+          var year = '';
+          if (item.published && item.published['date-parts'] && item.published['date-parts'][0]) {
+            year = item.published['date-parts'][0][0];
+          }
+          var div = document.createElement('div');
+          div.className = 'keyword-result-item';
+          div.innerHTML = '<div class="keyword-result-title">' + escHtmlGlobal(title) + '</div>'
+            + '<div class="keyword-result-meta">' + escHtmlGlobal(authStr) + (journal ? ' · ' + escHtmlGlobal(journal) : '') + (year ? ' · ' + year : '') + ' · ' + escHtmlGlobal(doi) + '</div>';
+          div.onclick = function() {
+            document.getElementById('doiInput').value = doi;
+            _searchMode = 'doi';
+            document.querySelectorAll('.search-mode-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelector('.search-mode-tab').classList.add('active');
+            document.getElementById('searchLabel').textContent = 'Paper DOI';
+            document.getElementById('generateBtn').textContent = 'Summarise';
+            container.style.display = 'none';
+            generateSummary();
+          };
+          container.appendChild(div);
+        });
+      }
+      container.style.display = 'block';
+    } catch (e) {
+      showError('Keyword search failed: ' + e.message);
+    }
+    btn.disabled = false; btn.textContent = 'Search';
+  }
+
   function loadDoi(doi) {
     document.getElementById('doiInput').value = doi;
     document.getElementById('doiInput').focus();
@@ -534,7 +1197,7 @@
     card.classList.add('visible');
     document.getElementById('errorText').textContent = msg;
     document.getElementById('generateBtn').disabled = false;
-    document.getElementById('generateBtn').textContent = 'Summarise';
+    document.getElementById('generateBtn').textContent = _searchMode === 'keyword' ? 'Search' : 'Summarise';
   }
 
   function resetApp() {
@@ -543,13 +1206,15 @@
     document.getElementById('errorCard').classList.remove('visible');
     document.getElementById('paperResult').classList.remove('visible');
     document.getElementById('generateBtn').disabled = false;
-    document.getElementById('generateBtn').textContent = 'Summarise';
+    document.getElementById('generateBtn').textContent = _searchMode === 'keyword' ? 'Search' : 'Summarise';
+    document.getElementById('keywordResults').style.display = 'none';
+    window._retractionInfo = null;
     window.scrollTo(0, 0);
   }
 
   // Allow Enter key
   document.getElementById('doiInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') generateSummary();
+    if (e.key === 'Enter') handleSearch();
   });
 
   async function generateSummary() {
@@ -559,6 +1224,7 @@
     document.getElementById('generateBtn').disabled = true;
     document.getElementById('generateBtn').textContent = 'Working...';
     document.getElementById('errorCard').classList.remove('visible');
+    document.getElementById('keywordResults').style.display = 'none';
     document.getElementById('loadingState').classList.add('visible');
     setStep(1);
 
@@ -573,6 +1239,41 @@
       showError('Could not fetch paper: ' + e.message);
       return;
     }
+
+    // ── Phase 2: Retraction Check ──
+    let retractionInfo = null;
+    try {
+      // Check updated-by field (CrossRef's actual field name)
+      var updates = paperData['updated-by'] || paperData['update-to'] || [];
+      for (var i = 0; i < updates.length; i++) {
+        var upd = updates[i];
+        if (upd.type === 'retraction' || (upd.label && upd.label.toLowerCase().includes('retract'))) {
+          retractionInfo = { type: 'retraction', source: 'crossref', source_url: upd.DOI ? 'https://doi.org/' + upd.DOI : '', reason: upd.label || 'Retracted' };
+          break;
+        }
+        if (upd.label && upd.label.toLowerCase().includes('expression of concern')) {
+          retractionInfo = { type: 'expression_of_concern', source: 'crossref', source_url: upd.DOI ? 'https://doi.org/' + upd.DOI : '', reason: upd.label || 'Expression of concern' };
+        }
+        if (upd.type === 'correction' || (upd.label && upd.label.toLowerCase().includes('correct'))) {
+          if (!retractionInfo) retractionInfo = { type: 'correction', source: 'crossref', source_url: upd.DOI ? 'https://doi.org/' + upd.DOI : '', reason: upd.label || 'Correction issued' };
+        }
+      }
+      // Check relation.is-retracted-by
+      if (!retractionInfo && paperData.relation && paperData.relation['is-retracted-by']) {
+        var retractedBy = paperData.relation['is-retracted-by'];
+        if (retractedBy.length > 0) {
+          retractionInfo = { type: 'retraction', source: 'crossref', source_url: retractedBy[0].id ? 'https://doi.org/' + retractedBy[0].id : '', reason: 'Retracted per CrossRef metadata' };
+        }
+      }
+      // Check title for "RETRACTED:" prefix
+      if (!retractionInfo) {
+        var titleStr = (paperData.title && paperData.title[0]) || '';
+        if (titleStr.toUpperCase().startsWith('RETRACTED')) {
+          retractionInfo = { type: 'retraction', source: 'crossref', source_url: '', reason: 'Title marked as retracted by publisher' };
+        }
+      }
+    } catch (e) { console.log('Retraction check error', e); }
+    window._retractionInfo = retractionInfo;
 
     setStep(2);
 
@@ -600,46 +1301,114 @@
 
     setStep(3);
 
-    // Call our serverless API — no API key needed in browser
+    // Check Supabase cache first
     let summaryData;
-    try {
-      const response = await fetch('/api/summarize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          doi,
-          metadata: { title, authors, journal, year, abstract }
-        })
-      });
+    let cachedFromDb = false;
+    if (window._supabaseClient) {
+      try {
+        const { data: cached } = await window._supabaseClient
+          .from('papers')
+          .select('summary_what_studied, summary_how_studied, summary_what_found, summary_confidence, summary_real_world, summary_why_care, summary_jargon')
+          .eq('doi', doi)
+          .maybeSingle();
+        if (cached && cached.summary_what_studied) {
+          summaryData = {
+            whatStudied: cached.summary_what_studied,
+            howStudied: cached.summary_how_studied,
+            whatFound: cached.summary_what_found,
+            confidence: cached.summary_confidence,
+            realWorld: cached.summary_real_world,
+            whyCare: cached.summary_why_care,
+            jargonTerms: cached.summary_jargon || []
+          };
+          cachedFromDb = true;
+        }
+      } catch (e) { console.log('Cache check failed, generating fresh', e); }
+    }
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Summary generation failed');
+    // If not cached, call Claude API
+    if (!summaryData) {
+      try {
+        const response = await fetch('/api/summarize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doi,
+            metadata: { title, authors, journal, year, abstract }
+          })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Summary generation failed');
+        }
+
+        const result = await response.json();
+        summaryData = result.summaryData;
+
+      } catch (e) {
+        showError('Could not generate summary: ' + e.message);
+        return;
       }
 
-      const result = await response.json();
-      summaryData = result.summaryData;
-
-    } catch (e) {
-      showError('Could not generate summary: ' + e.message);
-      return;
+      // Save summary to Supabase cache
+      if (window._supabaseClient && summaryData) {
+        try {
+          await window._supabaseClient.from('papers').upsert({
+            doi: doi,
+            title: title,
+            authors: authors,
+            journal: journal,
+            year: String(year),
+            abstract: abstract,
+            is_preprint: isPreprint,
+            is_open_access: isOpenAccess,
+            subject: subject,
+            summary_what_studied: summaryData.whatStudied,
+            summary_how_studied: summaryData.howStudied,
+            summary_what_found: summaryData.whatFound,
+            summary_confidence: summaryData.confidence,
+            summary_real_world: summaryData.realWorld,
+            summary_why_care: summaryData.whyCare,
+            summary_jargon: summaryData.jargonTerms || [],
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'doi' });
+        } catch (e) { console.log('Cache save failed', e); }
+      }
     }
 
     setStep(4);
 
     setTimeout(() => {
-      renderPaper({ title, authors, journal, year, doi, abstract, isPreprint, isOpenAccess, hasAbstract, subject, summaryData });
+      renderPaper({ title, authors, journal, year, doi, abstract, isPreprint, isOpenAccess, hasAbstract, subject, summaryData, retractionInfo });
     }, 300);
   }
 
-  function renderPaper({ title, authors, journal, year, doi, abstract, isPreprint, isOpenAccess, hasAbstract, subject, summaryData }) {
+  function renderPaper({ title, authors, journal, year, doi, abstract, isPreprint, isOpenAccess, hasAbstract, subject, summaryData, retractionInfo }) {
+    var isRetracted = retractionInfo && retractionInfo.type === 'retraction';
+
+    // Retraction banner
+    var retrBanner = document.getElementById('retractionBanner');
+    if (isRetracted) {
+      retrBanner.style.display = 'flex';
+      var detail = 'This paper was formally retracted.';
+      if (retractionInfo.reason) detail = retractionInfo.reason + '.';
+      if (retractionInfo.source_url) detail += ' <a href="' + retractionInfo.source_url + '" target="_blank" rel="noopener">View retraction notice</a>';
+      document.getElementById('retractionDetail').innerHTML = detail + ' Findings should not be cited or relied upon.';
+    } else {
+      retrBanner.style.display = 'none';
+    }
+
     // Status badges
     const statusRow = document.getElementById('statusRow');
     statusRow.innerHTML = '';
+    if (isRetracted) {
+      statusRow.innerHTML += '<span class="status-badge badge-retracted">RETRACTED</span>';
+    }
     statusRow.innerHTML += isPreprint
       ? '<span class="status-badge badge-preprint">⚠ Preprint</span>'
       : '<span class="status-badge badge-peer">✓ Peer Reviewed</span>';
-    if (subject) statusRow.innerHTML += `<span class="status-badge badge-field">${subject}</span>`;
+    if (subject) statusRow.innerHTML += '<span class="status-badge badge-field">' + escHtmlGlobal(subject) + '</span>';
     statusRow.innerHTML += isOpenAccess
       ? '<span class="status-badge badge-open">Open Access</span>'
       : '<span class="status-badge badge-paywall">⚿ Subscription Required</span>';
@@ -654,11 +1423,10 @@
     document.getElementById('paperTitle').textContent = title;
     window._currentDoi = doi;
     document.getElementById('paperAuthors').textContent = authors;
-    document.getElementById('paperMeta').innerHTML = `
-      <div class="meta-item">📄 <strong>${journal}</strong></div>
-      <div class="meta-item">📅 <strong>${year}</strong></div>
-      <div class="meta-item">🔗 <strong>${doi}</strong></div>
-    `;
+    document.getElementById('paperMeta').innerHTML =
+      '<div class="meta-item">&#128196; <strong>' + escHtmlGlobal(journal) + '</strong></div>'
+      + '<div class="meta-item">&#128197; <strong>' + escHtmlGlobal(String(year)) + '</strong></div>'
+      + '<div class="meta-item">&#128279; <strong>' + escHtmlGlobal(doi) + '</strong></div>';
 
     // Abstract
     const abstractEl = document.getElementById('abstractText');
@@ -684,7 +1452,7 @@
     (summaryData.jargonTerms || []).forEach(item => {
       const div = document.createElement('div');
       div.className = 'jargon-term';
-      div.innerHTML = `<strong>${item.term}</strong><span>${item.definition}</span>`;
+      div.innerHTML = '<strong>' + escHtmlGlobal(item.term) + '</strong><span>' + escHtmlGlobal(item.definition) + '</span>';
       jargonContainer.appendChild(div);
     });
     if (!summaryData.jargonTerms?.length) {
@@ -706,8 +1474,12 @@
     var saveRow = document.getElementById('saveRow');
     var authPrompt = document.getElementById('authPromptBanner');
     var loggedIn = document.getElementById('userMenuSection') && document.getElementById('userMenuSection').style.display === 'block';
-    if (saveRow) saveRow.style.display = loggedIn ? 'block' : 'none';
+    if (saveRow) saveRow.style.display = loggedIn ? 'flex' : 'none';
     if (authPrompt) authPrompt.style.display = loggedIn ? 'none' : 'flex';
+    // Load discussion + confidence
+    if (window.loadDiscussion) window.loadDiscussion(doi, title);
+    if (window.loadConfidence) window.loadConfidence();
+    if (window.loadCollectionDropdown) window.loadCollectionDropdown();
     window.scrollTo(0, 0);
   }
 
@@ -723,6 +1495,416 @@
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── Phase 3: Flag System ──
+  var _selectedFlagReason = null;
+
+  function openFlagModal() {
+    if (!window._authUser) { showToast('Please log in to flag summaries'); return; }
+    _selectedFlagReason = null;
+    document.querySelectorAll('.flag-reason-btn').forEach(function(b) { b.classList.remove('selected'); });
+    document.getElementById('flagDetail').value = '';
+    document.getElementById('submitFlagBtn').disabled = true;
+    document.getElementById('flagModalOverlay').classList.add('visible');
+  }
+
+  function closeFlagModal() {
+    document.getElementById('flagModalOverlay').classList.remove('visible');
+  }
+
+  function selectFlagReason(btn) {
+    document.querySelectorAll('.flag-reason-btn').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    _selectedFlagReason = btn.dataset.reason;
+    document.getElementById('submitFlagBtn').disabled = false;
+  }
+
+  async function submitFlag() {
+    if (!_selectedFlagReason) return;
+    if (!window._supabaseClient || !window._authUser) { showToast('Please log in'); return; }
+    if (!window._currentPaperId) { showToast('Paper not loaded'); return; }
+
+    var btn = document.getElementById('submitFlagBtn');
+    btn.disabled = true; btn.textContent = 'Submitting...';
+
+    var detail = document.getElementById('flagDetail').value.trim() || null;
+    var { error } = await window._supabaseClient.from('flags').insert({
+      target_type: 'summary',
+      paper_id: window._currentPaperId,
+      user_id: window._authUser.id,
+      reason: _selectedFlagReason,
+      detail: detail
+    });
+
+    if (error) {
+      console.error('Flag error', error);
+      showToast('Error submitting flag');
+    } else {
+      showToast('Thank you — flagged for review');
+      closeFlagModal();
+    }
+    btn.disabled = false; btn.textContent = 'Submit Flag';
+  }
+
+  // ── Phase 5: Confidence Voting ──
+  var _userConfidenceScore = null;
+
+  window.loadConfidence = async function() {
+    if (!window._supabaseClient || !window._currentPaperId) return;
+    // Load paper aggregate
+    try {
+      var { data: paper } = await window._supabaseClient
+        .from('papers').select('confidence_score_avg, confidence_score_count')
+        .eq('id', window._currentPaperId).single();
+      if (paper) updateConfidenceDisplay(paper.confidence_score_avg, paper.confidence_score_count);
+    } catch(e) {}
+    // Load user's vote
+    _userConfidenceScore = null;
+    document.querySelectorAll('.confidence-score-btn').forEach(function(b) { b.classList.remove('selected'); });
+    if (window._authUser) {
+      try {
+        var { data: vote } = await window._supabaseClient
+          .from('confidence_votes')
+          .select('score')
+          .eq('paper_id', window._currentPaperId)
+          .eq('user_id', window._authUser.id)
+          .maybeSingle();
+        if (vote) {
+          _userConfidenceScore = vote.score;
+          var btn = document.querySelector('.confidence-score-btn[data-score="' + vote.score + '"]');
+          if (btn) btn.classList.add('selected');
+        }
+      } catch(e) {}
+    }
+  };
+
+  function updateConfidenceDisplay(avg, count) {
+    var agg = document.getElementById('confidenceAggregate');
+    if (count && count > 0) {
+      agg.style.display = 'flex';
+      var pct = ((parseFloat(avg) / 5) * 100).toFixed(0);
+      document.getElementById('confidenceBarFill').style.width = pct + '%';
+      document.getElementById('confidenceAvgText').textContent = parseFloat(avg).toFixed(1) + ' / 5 (' + count + ' vote' + (count === 1 ? '' : 's') + ')';
+    } else {
+      agg.style.display = 'none';
+    }
+  }
+
+  window.submitConfidenceVote = async function(score) {
+    if (!window._authUser) { showToast('Please log in to rate'); return; }
+    if (!window._supabaseClient || !window._currentPaperId) return;
+
+    // Highlight selected
+    document.querySelectorAll('.confidence-score-btn').forEach(function(b) { b.classList.remove('selected'); });
+    document.querySelector('.confidence-score-btn[data-score="' + score + '"]').classList.add('selected');
+
+    // Upsert vote
+    var { error } = await window._supabaseClient.from('confidence_votes').upsert({
+      paper_id: window._currentPaperId,
+      user_id: window._authUser.id,
+      score: score,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'paper_id,user_id' });
+
+    if (error) {
+      console.error('Confidence vote error', error);
+      showToast('Error saving vote');
+    } else {
+      _userConfidenceScore = score;
+      showToast('Confidence rating saved');
+      // Reload aggregate
+      try {
+        var { data: paper } = await window._supabaseClient
+          .from('papers').select('confidence_score_avg, confidence_score_count')
+          .eq('id', window._currentPaperId).single();
+        if (paper) updateConfidenceDisplay(paper.confidence_score_avg, paper.confidence_score_count);
+      } catch(e) {}
+    }
+  };
+
+  // ── Phase 7: Collections ──
+  function openLibraryPanel() {
+    document.getElementById('libraryOverlay').classList.add('visible');
+    document.getElementById('libraryPanel').classList.add('open');
+    loadLibrary();
+  }
+
+  function closeLibraryPanel() {
+    document.getElementById('libraryOverlay').classList.remove('visible');
+    document.getElementById('libraryPanel').classList.remove('open');
+  }
+
+  async function loadLibrary() {
+    if (!window._supabaseClient || !window._authUser) return;
+    // Load collections
+    var { data: collections } = await window._supabaseClient
+      .from('collections').select('id, name, collection_papers(id)')
+      .eq('user_id', window._authUser.id)
+      .order('created_at', { ascending: false });
+
+    var listEl = document.getElementById('collectionsList');
+    listEl.innerHTML = '';
+    if (collections && collections.length > 0) {
+      collections.forEach(function(col) {
+        var count = col.collection_papers ? col.collection_papers.length : 0;
+        var div = document.createElement('div');
+        div.className = 'collection-item';
+        div.dataset.collectionId = col.id;
+        div.innerHTML = '<span class="collection-item-name">' + escHtmlGlobal(col.name) + '</span>'
+          + '<span style="display:flex;align-items:center;gap:0.5rem;">'
+          + '<span class="collection-item-count">' + count + '</span>'
+          + '<button class="collection-remove-btn" title="Delete collection" onclick="event.stopPropagation();deleteCollection(\'' + col.id + '\')">x</button>'
+          + '</span>';
+        div.onclick = function() { viewCollection(col.id, col.name); };
+        // Drop target
+        div.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+          div.classList.add('drag-over');
+        });
+        div.addEventListener('dragleave', function() {
+          div.classList.remove('drag-over');
+        });
+        div.addEventListener('drop', function(e) {
+          e.preventDefault();
+          div.classList.remove('drag-over');
+          var paperId = e.dataTransfer.getData('text/paper-id');
+          if (paperId) addToCollection(col.id, paperId);
+        });
+        listEl.appendChild(div);
+      });
+    } else {
+      listEl.innerHTML = '<div style="font-size:0.78rem;color:var(--text-muted);padding:0.5rem 0;">No collections yet. Create one, then drag papers into it.</div>';
+    }
+
+    // Load saved papers
+    var { data: saved } = await window._supabaseClient
+      .from('saved_papers').select('paper_id, papers(doi, title)')
+      .eq('user_id', window._authUser.id)
+      .order('created_at', { ascending: false });
+
+    var savedEl = document.getElementById('savedPapersList');
+    savedEl.innerHTML = '';
+    if (saved && saved.length > 0) {
+      saved.forEach(function(s) {
+        var paper = s.papers || {};
+        var div = document.createElement('div');
+        div.className = 'collection-paper-item saved-paper-drag';
+        div.draggable = true;
+        div.dataset.paperId = s.paper_id;
+        div.addEventListener('dragstart', function(e) {
+          e.dataTransfer.setData('text/paper-id', s.paper_id);
+          e.dataTransfer.effectAllowed = 'copy';
+          div.classList.add('dragging');
+        });
+        div.addEventListener('dragend', function() {
+          div.classList.remove('dragging');
+        });
+        div.innerHTML = '<span class="collection-paper-title" onclick="loadDoi(\'' + escHtmlGlobal(paper.doi || '') + '\');closeLibraryPanel();handleSearch();">' + escHtmlGlobal(paper.title || 'Untitled') + '</span>'
+          + '<span style="font-family:\'DM Mono\',monospace;font-size:0.55rem;color:var(--text-muted);flex-shrink:0;">drag to add</span>';
+        savedEl.appendChild(div);
+      });
+    } else {
+      savedEl.innerHTML = '<div style="font-size:0.78rem;color:var(--text-muted);padding:0.5rem 0;">No saved papers yet.</div>';
+    }
+  }
+
+  async function viewCollection(colId, colName) {
+    if (!window._supabaseClient) return;
+    var { data: papers } = await window._supabaseClient
+      .from('collection_papers').select('id, paper_id, papers(doi, title)')
+      .eq('collection_id', colId);
+
+    var listEl = document.getElementById('collectionsList');
+    listEl.innerHTML = '<div style="margin-bottom:0.75rem;">'
+      + '<button class="reply-btn" onclick="loadLibrary()" style="font-size:0.65rem;">&#8592; Back</button>'
+      + '<span style="font-family:\'DM Mono\',monospace;font-size:0.7rem;color:var(--text);margin-left:0.5rem;">' + escHtmlGlobal(colName) + '</span></div>';
+
+    if (papers && papers.length > 0) {
+      papers.forEach(function(cp) {
+        var paper = cp.papers || {};
+        var div = document.createElement('div');
+        div.className = 'collection-paper-item';
+        div.innerHTML = '<span class="collection-paper-title" onclick="loadDoi(\'' + escHtmlGlobal(paper.doi || '') + '\');closeLibraryPanel();handleSearch();">' + escHtmlGlobal(paper.title || 'Untitled') + '</span>'
+          + '<button class="collection-remove-btn" onclick="removePaperFromCollection(\'' + cp.id + '\',\'' + colId + '\',\'' + escHtmlGlobal(colName) + '\')" title="Remove">x</button>';
+        listEl.appendChild(div);
+      });
+    } else {
+      listEl.innerHTML += '<div style="font-size:0.78rem;color:var(--text-muted);padding:0.5rem 0;">No papers in this collection.</div>';
+    }
+  }
+
+  async function createCollection() {
+    var name = document.getElementById('newCollectionName').value.trim();
+    if (!name) return;
+    if (!window._supabaseClient || !window._authUser) { showToast('Please log in'); return; }
+
+    var { error } = await window._supabaseClient.from('collections').insert({
+      user_id: window._authUser.id, name: name
+    });
+    if (error) { showToast('Error creating collection'); console.error(error); }
+    else {
+      document.getElementById('newCollectionName').value = '';
+      document.getElementById('newCollectionRow').style.display = 'none';
+      showToast('Collection created');
+      loadLibrary();
+    }
+  }
+
+  async function deleteCollection(colId) {
+    if (!window._supabaseClient) return;
+    if (!confirm('Delete this collection?')) return;
+    await window._supabaseClient.from('collections').delete().eq('id', colId);
+    showToast('Collection deleted');
+    loadLibrary();
+  }
+
+  async function removePaperFromCollection(cpId, colId, colName) {
+    if (!window._supabaseClient) return;
+    await window._supabaseClient.from('collection_papers').delete().eq('id', cpId);
+    showToast('Removed from collection');
+    viewCollection(colId, colName);
+  }
+
+  function toggleCollectionDropdown() {
+    var menu = document.getElementById('collectionDropdownMenu');
+    menu.classList.toggle('visible');
+    if (menu.classList.contains('visible')) loadCollectionDropdownItems();
+  }
+
+  window.loadCollectionDropdown = function() {
+    // Close if open
+    document.getElementById('collectionDropdownMenu').classList.remove('visible');
+  };
+
+  async function loadCollectionDropdownItems() {
+    if (!window._supabaseClient || !window._authUser) {
+      showToast('Please log in');
+      document.getElementById('collectionDropdownMenu').classList.remove('visible');
+      return;
+    }
+    var { data: cols } = await window._supabaseClient
+      .from('collections').select('id, name')
+      .eq('user_id', window._authUser.id)
+      .order('name');
+
+    var menu = document.getElementById('collectionDropdownMenu');
+    menu.innerHTML = '';
+    if (!cols || cols.length === 0) {
+      menu.innerHTML = '<div class="collection-dropdown-item" style="color:var(--text-muted);cursor:default;">No collections yet</div>';
+    } else {
+      cols.forEach(function(col) {
+        var item = document.createElement('button');
+        item.className = 'collection-dropdown-item';
+        item.textContent = col.name;
+        item.onclick = function() { addToCollection(col.id); };
+        menu.appendChild(item);
+      });
+    }
+  }
+
+  async function addToCollection(colId, paperId) {
+    if (!window._supabaseClient) return;
+    var pid = paperId || window._currentPaperId;
+    if (!pid) { showToast('No paper selected'); return; }
+    var { error } = await window._supabaseClient.from('collection_papers').upsert({
+      collection_id: colId, paper_id: pid
+    }, { onConflict: 'collection_id,paper_id' });
+    document.getElementById('collectionDropdownMenu').classList.remove('visible');
+    if (error) {
+      console.error('Add to collection error', error);
+      showToast('Error adding to collection');
+    } else {
+      showToast('Added to collection');
+      // Refresh library if open
+      if (document.getElementById('libraryPanel').classList.contains('open')) loadLibrary();
+    }
+  }
+
+  // Close collection dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    var wrap = document.getElementById('addToCollectionWrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('collectionDropdownMenu').classList.remove('visible');
+    }
+  });
+
+  // ── Phase 8: Profile ──
+  var _selectedAvatar = null;
+
+  function selectAvatar(el) {
+    document.querySelectorAll('.avatar-option').forEach(function(o) { o.classList.remove('selected'); });
+    el.classList.add('selected');
+    _selectedAvatar = el.dataset.avatar;
+  }
+
+  function openProfileModal() {
+    if (!window._authUser || !window._supabaseClient) return;
+    _selectedAvatar = null;
+    document.querySelectorAll('.avatar-option').forEach(function(o) { o.classList.remove('selected'); });
+    document.getElementById('profileModalOverlay').classList.add('visible');
+    // Load current profile
+    window._supabaseClient.from('profiles').select('full_name, bio, institution, role, avatar_url, orcid_id')
+      .eq('id', window._authUser.id).single().then(function(result) {
+        if (result.data) {
+          document.getElementById('profileName').value = result.data.full_name || '';
+          document.getElementById('profileBio').value = result.data.bio || '';
+          document.getElementById('profileInstitution').value = result.data.institution || '';
+          document.getElementById('profileOrcid').value = result.data.orcid_id || '';
+          document.getElementById('profileRole').value = result.data.role || '';
+          // Highlight saved avatar
+          if (result.data.avatar_url) {
+            _selectedAvatar = result.data.avatar_url;
+            document.querySelectorAll('.avatar-option').forEach(function(o) {
+              if (o.dataset.avatar === result.data.avatar_url) o.classList.add('selected');
+            });
+          }
+        }
+      });
+  }
+
+  function closeProfileModal() {
+    document.getElementById('profileModalOverlay').classList.remove('visible');
+  }
+
+  async function saveProfile() {
+    if (!window._supabaseClient || !window._authUser) return;
+    var btn = document.getElementById('saveProfileBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+
+    var orcidVal = document.getElementById('profileOrcid').value.trim();
+    // Validate ORCID format if provided (####-####-####-####)
+    if (orcidVal && !/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(orcidVal)) {
+      showToast('ORCID format should be 0000-0000-0000-0000');
+      btn.disabled = false; btn.textContent = 'Save Profile';
+      return;
+    }
+    var updateData = {
+      full_name: document.getElementById('profileName').value.trim(),
+      bio: document.getElementById('profileBio').value.trim() || null,
+      institution: document.getElementById('profileInstitution').value.trim() || null,
+      role: document.getElementById('profileRole').value || null,
+      orcid_id: orcidVal || null
+    };
+    if (_selectedAvatar) updateData.avatar_url = _selectedAvatar;
+
+    var { error } = await window._supabaseClient.from('profiles').update(updateData)
+      .eq('id', window._authUser.id);
+
+    if (error) {
+      console.error('Profile save error', error);
+      showToast('Error saving profile');
+    } else {
+      showToast('Profile updated');
+      // Update header avatar immediately
+      if (_selectedAvatar) {
+        var av = document.getElementById('userAvatar');
+        if (av) { av.textContent = _selectedAvatar; av.style.fontSize = '1.1rem'; }
+      }
+      closeProfileModal();
+    }
+    btn.disabled = false; btn.textContent = 'Save Profile';
   }
 </script>
 
@@ -788,6 +1970,7 @@
       var cfg = await r.json();
       if (cfg.url && cfg.anonKey) {
         _sb = window.supabase.createClient(cfg.url, cfg.anonKey);
+        window._supabaseClient = _sb;
         var sess = await _sb.auth.getSession();
         if (sess.data.session) setUser(sess.data.session.user);
         _sb.auth.onAuthStateChange(function(e, s) { setUser(s ? s.user : null); });
@@ -797,6 +1980,7 @@
 
   function setUser(user) {
     _user = user;
+    window._authUser = user;
     var ab = document.getElementById('authButtons');
     var us = document.getElementById('userMenuSection');
     var ap = document.getElementById('authPromptBanner');
@@ -805,16 +1989,42 @@
       if (ab) ab.style.display = 'none';
       if (us) us.style.display = 'block';
       var init = ((user.user_metadata && user.user_metadata.full_name) || user.email || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
-      var av = document.getElementById('userAvatar'); if (av) av.textContent = init;
+      var av = document.getElementById('userAvatar');
+      if (av) {
+        av.textContent = init;
+        av.style.fontSize = '0.7rem';
+        // Load avatar from profile if available
+        if (_sb) {
+          _sb.from('profiles').select('avatar_url').eq('id', user.id).single().then(function(res) {
+            if (res.data && res.data.avatar_url) {
+              av.textContent = res.data.avatar_url;
+              av.style.fontSize = '1.1rem';
+            }
+          });
+        }
+      }
       var nm = document.getElementById('userMenuName'); if (nm) nm.textContent = (user.user_metadata && user.user_metadata.full_name) || 'User';
       var em = document.getElementById('userMenuEmail'); if (em) em.textContent = user.email;
       if (ap) ap.style.display = 'none';
-      if (sr && _paperId) sr.style.display = 'block';
+      if (sr && _paperId) sr.style.display = 'flex';
     } else {
       if (ab) ab.style.display = 'flex';
       if (us) us.style.display = 'none';
       if (ap && _paperId) { ap.style.display = 'flex'; }
       if (sr) sr.style.display = 'none';
+    }
+    updateCommentFormVisibility();
+  }
+
+  function updateCommentFormVisibility() {
+    var formAuth = document.getElementById('commentFormAuth');
+    var formLoggedIn = document.getElementById('commentFormLoggedIn');
+    if (_user) {
+      if (formAuth) formAuth.style.display = 'none';
+      if (formLoggedIn) formLoggedIn.style.display = 'block';
+    } else {
+      if (formAuth) formAuth.style.display = 'block';
+      if (formLoggedIn) formLoggedIn.style.display = 'none';
     }
   }
 
@@ -842,6 +2052,14 @@
     document.getElementById('switchToLogin').onclick = function() { showModal('login'); };
     document.getElementById('backToLoginBtn').onclick = function() { hideModal(); showModal('login'); };
     if (document.getElementById('authPromptBtn')) document.getElementById('authPromptBtn').onclick = function() { showModal('signup'); };
+    document.getElementById('myLibraryBtn').onclick = function() {
+      document.getElementById('userMenuDropdown').style.display = 'none';
+      openLibraryPanel();
+    };
+    document.getElementById('editProfileBtn').onclick = function() {
+      document.getElementById('userMenuDropdown').style.display = 'none';
+      openProfileModal();
+    };
     document.getElementById('signOutBtn').onclick = async function() {
       if (_sb) await _sb.auth.signOut();
       document.getElementById('userMenuDropdown').style.display = 'none';
@@ -932,8 +2150,287 @@
         showToast('Error saving paper');
       }
     };
+    // Discussion: character count
+    var commentBody = document.getElementById('commentBody');
+    if (commentBody) {
+      commentBody.addEventListener('input', function() {
+        document.getElementById('charCount').textContent = this.value.length.toLocaleString() + ' / 5,000';
+      });
+    }
+    // Discussion: comment login button
+    var clb = document.getElementById('commentLoginBtn');
+    if (clb) clb.onclick = function() { showModal('login'); };
+    // Discussion: submit comment
+    var scb = document.getElementById('submitCommentBtn');
+    if (scb) scb.onclick = function() { window.submitComment(); };
+
     init();
   });
+
+  // ── DISCUSSION ──
+
+  async function ensurePaperAndLoadComments(doi, title) {
+    if (!_sb) { updateCommentFormVisibility(); return; }
+    var result = await _sb.from('papers').upsert(
+      { doi: doi, title: title, updated_at: new Date().toISOString() },
+      { onConflict: 'doi' }
+    ).select('id').single();
+    if (!result.data) { console.error('Paper upsert for comments failed', result.error); return; }
+    window._currentPaperId = result.data.id;
+
+    // Phase 1: Increment view count
+    try { await _sb.rpc('increment_view_count', { paper_doi: doi }); } catch(e) { console.log('View count error', e); }
+
+    // Phase 2: Save retraction info if detected
+    if (window._retractionInfo && window._currentPaperId) {
+      try {
+        // Mark paper as retracted
+        await _sb.from('papers').update({
+          is_retracted: true,
+          retraction_type: window._retractionInfo.type
+        }).eq('id', window._currentPaperId);
+        // Insert retraction record (ignore duplicate)
+        await _sb.from('retractions').insert({
+          paper_id: window._currentPaperId,
+          type: window._retractionInfo.type,
+          source: window._retractionInfo.source || 'crossref',
+          source_url: window._retractionInfo.source_url || null,
+          reason: window._retractionInfo.reason || null
+        });
+      } catch(e) { console.log('Retraction save error', e); }
+    }
+
+    updateCommentFormVisibility();
+    await loadComments();
+  }
+
+  async function loadComments() {
+    if (!_sb || !window._currentPaperId) return;
+    var { data, error } = await _sb
+      .from('comments')
+      .select('id, body, created_at, parent_id, user_id, vote_score, profiles(full_name, role)')
+      .eq('paper_id', window._currentPaperId)
+      .order('created_at', { ascending: true });
+    if (error) { console.error('Load comments error', error); return; }
+
+    // Fetch user's existing votes
+    window._userCommentVotes = {};
+    if (_user) {
+      try {
+        var commentIds = (data || []).map(function(c) { return c.id; });
+        if (commentIds.length > 0) {
+          var { data: votes } = await _sb
+            .from('comment_votes')
+            .select('comment_id, value')
+            .eq('user_id', _user.id)
+            .in('comment_id', commentIds);
+          if (votes) {
+            votes.forEach(function(v) { window._userCommentVotes[v.comment_id] = v.value; });
+          }
+        }
+      } catch(e) { console.log('Vote fetch error', e); }
+    }
+
+    renderComments(data || []);
+  }
+
+  function renderComments(comments) {
+    var list = document.getElementById('commentList');
+    var empty = document.getElementById('commentEmpty');
+    var countEl = document.getElementById('commentCount');
+    list.innerHTML = '';
+
+    var topLevel = comments.filter(function(c) { return !c.parent_id; });
+    var replies = {};
+    comments.forEach(function(c) {
+      if (c.parent_id) {
+        if (!replies[c.parent_id]) replies[c.parent_id] = [];
+        replies[c.parent_id].push(c);
+      }
+    });
+
+    var total = comments.length;
+    countEl.textContent = total + (total === 1 ? ' comment' : ' comments');
+
+    if (topLevel.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    topLevel.forEach(function(c) {
+      var el = buildCommentEl(c, false);
+      var childReplies = replies[c.id] || [];
+      if (childReplies.length > 0) {
+        var repliesDiv = document.createElement('div');
+        repliesDiv.className = 'comment-replies';
+        childReplies.forEach(function(r) {
+          repliesDiv.appendChild(buildCommentEl(r, true));
+        });
+        el.appendChild(repliesDiv);
+      }
+      list.appendChild(el);
+    });
+  }
+
+  function buildCommentEl(comment, isReply) {
+    var div = document.createElement('div');
+    div.className = 'comment-item';
+
+    var profile = comment.profiles || {};
+    var name = profile.full_name || 'Anonymous';
+    var role = profile.role || '';
+    var timeAgo = relativeTime(comment.created_at);
+    var roleClass = role ? ' role-' + role.toLowerCase().replace(/[^a-z]/g, '') : '';
+
+    var metaHtml = '<div class="comment-meta">'
+      + '<span class="comment-author">' + escHtml(name) + '</span>';
+    if (role) {
+      metaHtml += '<span class="comment-role-badge' + roleClass + '">' + escHtml(role) + '</span>';
+    }
+    metaHtml += '<span class="comment-time">' + timeAgo + '</span></div>';
+
+    var bodyHtml = '<div class="comment-body">' + escHtml(comment.body) + '</div>';
+
+    // Phase 4: Comment voting
+    var voteScore = comment.vote_score || 0;
+    var userVote = window._userCommentVotes ? (window._userCommentVotes[comment.id] || 0) : 0;
+    var upClass = userVote === 1 ? ' active-up' : '';
+    var downClass = userVote === -1 ? ' active-down' : '';
+
+    var voteHtml = '<div class="comment-actions" style="display:flex;align-items:center;gap:0.5rem;">'
+      + '<span class="comment-vote-group">'
+      + '<button class="vote-btn' + upClass + '" onclick="voteComment(\'' + comment.id + '\', 1)" title="Upvote">&#9650;</button>'
+      + '<span class="vote-score">' + voteScore + '</span>'
+      + '<button class="vote-btn' + downClass + '" onclick="voteComment(\'' + comment.id + '\', -1)" title="Downvote">&#9660;</button>'
+      + '</span>';
+
+    if (!isReply && _user) {
+      voteHtml += '<button class="reply-btn" onclick="showReplyForm(\'' + comment.id + '\')">&#8617; Reply</button>';
+    }
+    voteHtml += '</div>';
+
+    var replyFormHtml = '';
+    if (!isReply && _user) {
+      replyFormHtml = '<div id="reply-form-' + comment.id + '" class="reply-form" style="display:none;">'
+        + '<textarea placeholder="Write a reply..." maxlength="5000" id="reply-body-' + comment.id + '"></textarea>'
+        + '<div class="reply-form-actions">'
+        + '<button class="reply-btn" onclick="hideReplyForm(\'' + comment.id + '\')">Cancel</button>'
+        + '<button class="btn-comment-submit" onclick="submitReply(\'' + comment.id + '\')">Reply</button>'
+        + '</div></div>';
+    }
+
+    div.innerHTML = metaHtml + bodyHtml + voteHtml + replyFormHtml;
+    return div;
+  }
+
+  function escHtml(str) {
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function relativeTime(dateStr) {
+    var now = Date.now();
+    var then = new Date(dateStr).getTime();
+    var diff = Math.floor((now - then) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    if (diff < 2592000) return Math.floor(diff / 86400) + 'd ago';
+    return new Date(dateStr).toLocaleDateString();
+  }
+
+  // Expose to global scope for onclick handlers
+  window.loadDiscussion = ensurePaperAndLoadComments;
+
+  window.showReplyForm = function(commentId) {
+    document.getElementById('reply-form-' + commentId).style.display = 'block';
+    document.getElementById('reply-body-' + commentId).focus();
+  };
+
+  window.hideReplyForm = function(commentId) {
+    document.getElementById('reply-form-' + commentId).style.display = 'none';
+  };
+
+  window.submitComment = async function() {
+    if (!_user) { showToast('Please log in to comment'); return; }
+    if (!_sb || !window._currentPaperId) return;
+    var body = document.getElementById('commentBody').value.trim();
+    if (!body) { showToast('Comment cannot be empty'); return; }
+
+    var btn = document.getElementById('submitCommentBtn');
+    btn.disabled = true; btn.textContent = 'Posting...';
+
+    var { error } = await _sb.from('comments').insert({
+      paper_id: window._currentPaperId,
+      user_id: _user.id,
+      body: body
+    });
+
+    if (error) {
+      showToast('Error posting comment');
+      console.error(error);
+    } else {
+      document.getElementById('commentBody').value = '';
+      document.getElementById('charCount').textContent = '0 / 5,000';
+      showToast('Comment posted');
+      await loadComments();
+    }
+    btn.disabled = false; btn.textContent = 'Post Comment';
+  };
+
+  window.submitReply = async function(parentId) {
+    if (!_user) { showToast('Please log in to reply'); return; }
+    if (!_sb || !window._currentPaperId) return;
+    var bodyEl = document.getElementById('reply-body-' + parentId);
+    var body = bodyEl.value.trim();
+    if (!body) { showToast('Reply cannot be empty'); return; }
+
+    var { error } = await _sb.from('comments').insert({
+      paper_id: window._currentPaperId,
+      user_id: _user.id,
+      parent_id: parentId,
+      body: body
+    });
+
+    if (error) {
+      showToast('Error posting reply');
+      console.error(error);
+    } else {
+      showToast('Reply posted');
+      await loadComments();
+    }
+  };
+
+  // Phase 4: Comment voting
+  window.voteComment = async function(commentId, value) {
+    if (!_user) { showToast('Please log in to vote'); return; }
+    if (!_sb) return;
+
+    var currentVote = window._userCommentVotes ? (window._userCommentVotes[commentId] || 0) : 0;
+
+    if (currentVote === value) {
+      // Remove vote (toggle off)
+      var { error } = await _sb.from('comment_votes').delete()
+        .eq('comment_id', commentId).eq('user_id', _user.id);
+      if (!error) window._userCommentVotes[commentId] = 0;
+    } else if (currentVote !== 0) {
+      // Update existing vote
+      var { error } = await _sb.from('comment_votes').update({ value: value })
+        .eq('comment_id', commentId).eq('user_id', _user.id);
+      if (!error) window._userCommentVotes[commentId] = value;
+    } else {
+      // Insert new vote
+      var { error } = await _sb.from('comment_votes').insert({
+        comment_id: commentId, user_id: _user.id, value: value
+      });
+      if (!error) window._userCommentVotes[commentId] = value;
+    }
+    if (error) { console.error('Vote error', error); showToast('Error voting'); }
+    else { await loadComments(); }
+  };
+
 })();
 </script>
 

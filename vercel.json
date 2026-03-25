@@ -1,6 +1,6 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/summarize", "destination": "/api/summarize" }
+    { "source": "/api/:path*", "destination": "/api/:path*" }
   ]
 }
