@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annotia — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #181f2e; --surface: #222a3d; --surface2: #2a3450; --surface3: #334060;
+    --border: #3a4d70; --border-light: #4a5f85;
+    --gold: #d4b05a; --gold-dim: rgba(201,168,76,0.12);
+    --teal: #5ab4c8; --teal-dim: rgba(74,158,173,0.12);
+    --green: #5ab882; --red: #d06060;
+    --text: #f0ece4; --text-dim: #a0adc8; --text-muted: #6a7a96;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.4; }
+  a { text-decoration:none; color:inherit; }
+
+  header { position:fixed; top:0; left:0; right:0; z-index:100; padding:0 2rem; border-bottom:1px solid var(--border); background:rgba(10,13,20,0.88); backdrop-filter:blur(16px); }
+  .header-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:60px; }
+  .logo { font-family:'Cormorant Garamond',serif; font-size:1.7rem; font-weight:700; color:var(--text); letter-spacing:0.02em; }
+  .logo span { color:var(--gold); }
+  .header-nav { display:flex; align-items:center; gap:1.2rem; }
+  .header-nav a { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; }
+  .admin-badge { font-family:'DM Mono',monospace; font-size:0.62rem; background:var(--red); color:#fff; padding:2px 8px; border-radius:3px; letter-spacing:0.06em; margin-left:8px; }
+
+  .shell { max-width:1000px; margin:0 auto; padding:84px 2rem 80px; position:relative; z-index:1; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px; }
+  .card-title { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:16px; }
+
+  .stat-row { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .stat-pill { flex:1; min-width:120px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; text-align:center; }
+  .stat-value { font-family:'Cormorant Garamond',serif; font-size:1.6rem; font-weight:600; color:var(--text); }
+  .stat-label { font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; margin-top:4px; }
+
+  table { width:100%; border-collapse:collapse; }
+  th { font-family:'DM Mono',monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); text-align:left; padding:10px 12px; border-bottom:2px solid var(--border); }
+  td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:0.85rem; color:var(--text-dim); }
+  tr:hover { background:var(--surface2); }
+
+  .btn { font-family:'DM Mono',monospace; font-size:0.7rem; padding:5px 12px; border-radius:4px; cursor:pointer; border:none; letter-spacing:0.04em; text-transform:uppercase; font-weight:500; }
+  .btn-gold { background:var(--gold); color:var(--bg); }
+  .btn-red { background:rgba(208,96,96,0.15); color:var(--red); border:1px solid rgba(208,96,96,0.3); }
+  .btn-green { background:rgba(90,184,130,0.15); color:var(--green); border:1px solid rgba(90,184,130,0.3); }
+  .btn-ghost { background:transparent; color:var(--text-dim); border:1px solid var(--border); }
+
+  .badge-pro { font-family:'DM Mono',monospace; font-size:0.6rem; background:var(--gold-dim); color:var(--gold); padding:2px 6px; border-radius:3px; letter-spacing:0.04em; }
+  .badge-free { font-family:'DM Mono',monospace; font-size:0.6rem; background:var(--surface2); color:var(--text-muted); padding:2px 6px; border-radius:3px; letter-spacing:0.04em; }
+
+  .search-input { width:100%; padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:inherit; font-size:0.85rem; outline:none; margin-bottom:16px; }
+  .search-input:focus { border-color:var(--gold); }
+
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(60px); background:var(--surface2); border:1px solid var(--gold); color:var(--gold); padding:10px 20px; border-radius:8px; font-size:0.82rem; font-weight:500; z-index:300; transition:transform 0.25s; pointer-events:none; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  .tabs { display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--border); }
+  .tab { font-family:'DM Mono',monospace; font-size:0.72rem; padding:10px 16px; cursor:pointer; color:var(--text-muted); border:none; background:none; border-bottom:2px solid transparent; letter-spacing:0.06em; text-transform:uppercase; }
+  .tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+
+  #loadingScreen { display:flex; align-items:center; justify-content:center; min-height:60vh; color:var(--text-muted); font-size:0.85rem; }
+  .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.6s linear infinite; margin-right:8px; vertical-align:middle; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">annoti<span>a</span></a><span class="admin-badge">ADMIN</span>
+    <div class="header-nav">
+      <a href="/">Feed</a>
+      <a href="/dashboard.html">Dashboard</a>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <div id="loadingScreen"><span class="spinner"></span> Loading admin...</div>
+  <div id="adminContent" style="display:none">
+
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;margin-bottom:6px">Admin Panel</h1>
+    <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:24px">Manage users, papers, and platform settings.</p>
+
+    <!-- Stats -->
+    <div class="stat-row" id="adminStats"></div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="users" onclick="switchTab('users')">Users</button>
+      <button class="tab" data-tab="papers" onclick="switchTab('papers')">Papers</button>
+      <button class="tab" data-tab="flags" onclick="switchTab('flags')">Flags</button>
+    </div>
+
+    <!-- Users tab -->
+    <div id="usersTab">
+      <input class="search-input" id="userSearch" placeholder="Search users by name or email..." oninput="filterUsers()" />
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>User</th><th>Type</th><th>Plan</th><th>Papers Saved</th><th>Comments</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Papers tab -->
+    <div id="papersTab" style="display:none">
+      <input class="search-input" id="paperSearch" placeholder="Search papers by title or DOI..." oninput="filterPapers()" />
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Title</th><th>Journal</th><th>Year</th><th>AI Summary</th><th>Comments</th><th>Views</th><th>Actions</th></tr></thead>
+          <tbody id="papersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Flags tab -->
+    <div id="flagsTab" style="display:none">
+      <div id="flagsContent"><div style="color:var(--text-muted);font-size:0.85rem;padding:40px 0;text-align:center">Loading flags...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let sb = null;
+let allUsers = [];
+let allPapers = [];
+const ADMIN_EMAILS = ['beckstar333@gmail.com']; // Add your email here
+
+async function init() {
+  try {
+    const resp = await fetch('/api/config');
+    const { url, anonKey } = await resp.json();
+    if (url && anonKey && window.supabase) sb = window.supabase.createClient(url, anonKey);
+  } catch(e) {}
+
+  if (!sb) { document.getElementById('loadingScreen').innerHTML = 'Service unavailable.'; return; }
+
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user || !ADMIN_EMAILS.includes(user.email)) {
+    document.getElementById('loadingScreen').innerHTML = '<div style="text-align:center"><div style="font-size:1.2rem;margin-bottom:8px">🔒</div>Access denied.<br><a href="/" style="color:var(--gold);margin-top:12px;display:inline-block">← Back to Annotia</a></div>';
+    return;
+  }
+
+  await loadAdmin();
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('adminContent').style.display = '';
+}
+
+async function loadAdmin() {
+  // Fetch users
+  const { data: users } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+  allUsers = users || [];
+
+  // Fetch papers
+  const { data: papers } = await sb.from('papers').select('*, comments(count)').order('created_at', { ascending: false });
+  allPapers = papers || [];
+
+  // Stats
+  const proCount = allUsers.filter(u => u.is_pro).length;
+  const summaryCount = allPapers.filter(p => p.summary_what_studied).length;
+  const totalComments = allPapers.reduce((s, p) => s + (p.comments?.[0]?.count || 0), 0);
+
+  document.getElementById('adminStats').innerHTML = `
+    <div class="stat-pill"><div class="stat-value">${allUsers.length}</div><div class="stat-label">Users</div></div>
+    <div class="stat-pill"><div class="stat-value">${proCount}</div><div class="stat-label">Pro Users</div></div>
+    <div class="stat-pill"><div class="stat-value">${allPapers.length}</div><div class="stat-label">Papers</div></div>
+    <div class="stat-pill"><div class="stat-value">${summaryCount}</div><div class="stat-label">AI Summaries</div></div>
+    <div class="stat-pill"><div class="stat-value">${totalComments}</div><div class="stat-label">Comments</div></div>
+  `;
+
+  renderUsers(allUsers);
+  renderPapers(allPapers);
+  loadFlags();
+}
+
+function renderUsers(users) {
+  document.getElementById('usersTableBody').innerHTML = users.map(u => `
+    <tr>
+      <td>
+        <div style="font-weight:500;color:var(--text)">${u.full_name || 'Anonymous'}</div>
+        <div style="font-size:0.72rem;color:var(--text-muted)">${u.id.slice(0,8)}...</div>
+      </td>
+      <td>${u.user_type || u.role || '—'}</td>
+      <td>${u.is_pro ? '<span class="badge-pro">✦ PRO</span>' : '<span class="badge-free">FREE</span>'}</td>
+      <td>—</td>
+      <td>—</td>
+      <td>${u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          ${u.is_pro
+            ? `<button class="btn btn-red" onclick="togglePro('${u.id}', false)">Revoke Pro</button>`
+            : `<button class="btn btn-green" onclick="togglePro('${u.id}', true)">Grant Pro</button>`
+          }
+          <button class="btn btn-ghost" onclick="verifyUser('${u.id}', ${!u.is_verified})">${u.is_verified ? 'Unverify' : 'Verify'}</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderPapers(papers) {
+  document.getElementById('papersTableBody').innerHTML = papers.map(p => `
+    <tr>
+      <td>
+        <div style="font-weight:500;color:var(--text);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</div>
+        <div style="font-size:0.72rem;color:var(--text-muted)">${p.doi || '—'}</div>
+      </td>
+      <td style="font-size:0.78rem">${p.journal || '—'}</td>
+      <td>${p.year || '—'}</td>
+      <td>${p.summary_what_studied ? '<span style="color:var(--teal)">✓</span>' : '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${p.comments?.[0]?.count || 0}</td>
+      <td>${p.view_count || 0}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost" onclick="window.open('/demo.html?doi=${encodeURIComponent(p.doi)}','_blank')">View</button>
+          <button class="btn btn-red" onclick="deletePaper('${p.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterUsers() {
+  const q = document.getElementById('userSearch').value.toLowerCase();
+  const filtered = allUsers.filter(u =>
+    (u.full_name || '').toLowerCase().includes(q) || u.id.includes(q) || (u.user_type || '').toLowerCase().includes(q)
+  );
+  renderUsers(filtered);
+}
+
+function filterPapers() {
+  const q = document.getElementById('paperSearch').value.toLowerCase();
+  const filtered = allPapers.filter(p =>
+    (p.title || '').toLowerCase().includes(q) || (p.doi || '').toLowerCase().includes(q) || (p.journal || '').toLowerCase().includes(q)
+  );
+  renderPapers(filtered);
+}
+
+async function togglePro(userId, grantPro) {
+  const { error } = await sb.from('profiles').update({
+    is_pro: grantPro,
+    pro_since: grantPro ? new Date().toISOString() : null,
+    pro_until: null,
+  }).eq('id', userId);
+
+  if (error) { showToast('Error: ' + error.message); return; }
+
+  const user = allUsers.find(u => u.id === userId);
+  if (user) user.is_pro = grantPro;
+  renderUsers(allUsers);
+  showToast(grantPro ? 'Pro access granted' : 'Pro access revoked');
+
+  // Update stats
+  const proCount = allUsers.filter(u => u.is_pro).length;
+  document.querySelector('.stat-row').children[1].querySelector('.stat-value').textContent = proCount;
+}
+
+async function verifyUser(userId, verify) {
+  const { error } = await sb.from('profiles').update({ is_verified: verify }).eq('id', userId);
+  if (error) { showToast('Error: ' + error.message); return; }
+
+  const user = allUsers.find(u => u.id === userId);
+  if (user) user.is_verified = verify;
+  renderUsers(allUsers);
+  showToast(verify ? 'User verified' : 'Verification removed');
+}
+
+async function deletePaper(paperId) {
+  if (!confirm('Delete this paper and all its comments? This cannot be undone.')) return;
+
+  const { error } = await sb.from('papers').delete().eq('id', paperId);
+  if (error) { showToast('Error: ' + error.message); return; }
+
+  allPapers = allPapers.filter(p => p.id !== paperId);
+  renderPapers(allPapers);
+  showToast('Paper deleted');
+}
+
+async function loadFlags() {
+  const { data: flags } = await sb.from('flags').select('*').eq('status', 'open').order('created_at', { ascending: false });
+
+  const el = document.getElementById('flagsContent');
+  if (!flags || flags.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:40px 0;text-align:center">No open flags. All clear!</div>';
+    return;
+  }
+
+  el.innerHTML = `<div class="card" style="padding:0;overflow:hidden"><table>
+    <thead><tr><th>Type</th><th>Reason</th><th>Details</th><th>Reported</th><th>Actions</th></tr></thead>
+    <tbody>${flags.map(f => `
+      <tr>
+        <td>${f.target_type || '—'}</td>
+        <td><span style="color:var(--red)">${f.reason || '—'}</span></td>
+        <td style="font-size:0.78rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.details || '—'}</td>
+        <td style="font-size:0.78rem">${f.created_at ? new Date(f.created_at).toLocaleDateString() : '—'}</td>
+        <td>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-green" onclick="resolveFlag('${f.id}','resolved')">Resolve</button>
+            <button class="btn btn-ghost" onclick="resolveFlag('${f.id}','dismissed')">Dismiss</button>
+          </div>
+        </td>
+      </tr>
+    `).join('')}</tbody>
+  </table></div>`;
+}
+
+async function resolveFlag(flagId, status) {
+  const { data: { user } } = await sb.auth.getUser();
+  await sb.from('flags').update({
+    status,
+    resolved_by: user?.id,
+    resolved_at: new Date().toISOString(),
+  }).eq('id', flagId);
+
+  loadFlags();
+  showToast('Flag ' + status);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.getElementById('usersTab').style.display = tab === 'users' ? '' : 'none';
+  document.getElementById('papersTab').style.display = tab === 'papers' ? '' : 'none';
+  document.getElementById('flagsTab').style.display = tab === 'flags' ? '' : 'none';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+init();
+</script>
+</body>
+</html>
