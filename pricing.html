@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annotia — Pricing</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #181f2e; --surface: #222a3d; --surface2: #2a3450; --surface3: #334060;
+    --border: #3a4d70; --border-light: #4a5f85;
+    --gold: #d4b05a; --gold-dim: rgba(201,168,76,0.12);
+    --teal: #5ab4c8; --teal-dim: rgba(74,158,173,0.12);
+    --green: #5ab882; --red: #d06060;
+    --text: #f0ece4; --text-dim: #a0adc8; --text-muted: #6a7a96;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.4; }
+  a { text-decoration:none; color:inherit; }
+
+  header { position:fixed; top:0; left:0; right:0; z-index:100; padding:0 2rem; border-bottom:1px solid var(--border); background:rgba(10,13,20,0.88); backdrop-filter:blur(16px); }
+  .header-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:60px; }
+  .logo { font-family:'Cormorant Garamond',serif; font-size:1.7rem; font-weight:700; color:var(--text); letter-spacing:0.02em; }
+  .logo span { color:var(--gold); }
+  .header-nav { display:flex; align-items:center; gap:1.2rem; }
+  .header-nav a { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; }
+  .header-nav a:hover { color:var(--gold); }
+
+  .shell { max-width:900px; margin:0 auto; padding:100px 2rem 80px; position:relative; z-index:1; }
+
+  .hero-eyebrow { font-family:'DM Mono',monospace; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--gold); margin-bottom:1.2rem; text-align:center; }
+  .hero-title { font-family:'Cormorant Garamond',serif; font-size:2.8rem; font-weight:600; text-align:center; line-height:1.15; margin-bottom:0.8rem; color:var(--text); }
+  .hero-title em { color:var(--gold); font-style:italic; }
+  .hero-sub { font-size:1rem; color:var(--text-dim); text-align:center; max-width:520px; margin:0 auto 3.5rem; line-height:1.65; font-weight:300; }
+
+  /* Pricing cards */
+  .pricing-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:48px; }
+  .pricing-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:32px 28px; display:flex; flex-direction:column; }
+  .pricing-card.featured { border-color:var(--gold); position:relative; }
+  .pricing-card.featured::before { content:'MOST POPULAR'; position:absolute; top:-11px; left:50%; transform:translateX(-50%); font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.1em; background:var(--gold); color:var(--bg); padding:3px 14px; border-radius:10px; font-weight:500; }
+  .plan-name { font-family:'DM Mono',monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; }
+  .plan-price { font-family:'Cormorant Garamond',serif; font-size:3rem; font-weight:700; color:var(--text); line-height:1; }
+  .plan-price .per { font-size:1rem; font-weight:400; color:var(--text-muted); margin-left:2px; }
+  .plan-desc { font-size:0.85rem; color:var(--text-dim); margin:12px 0 24px; line-height:1.55; }
+  .plan-btn { display:block; text-align:center; padding:12px 24px; border-radius:8px; font-family:'DM Mono',monospace; font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase; font-weight:500; margin-bottom:24px; transition:all 0.15s; }
+  .plan-btn-ghost { border:1px solid var(--border); color:var(--text-dim); background:transparent; }
+  .plan-btn-gold { border:none; background:var(--gold); color:var(--bg); }
+  .plan-btn:hover { opacity:0.85; }
+
+  .feature-list { list-style:none; display:flex; flex-direction:column; gap:10px; margin-top:auto; }
+  .feature-list li { display:flex; align-items:flex-start; gap:10px; font-size:0.82rem; color:var(--text-dim); line-height:1.5; }
+  .feature-list .check { color:var(--green); font-size:0.9rem; flex-shrink:0; margin-top:1px; }
+  .feature-list .x { color:var(--text-muted); font-size:0.9rem; flex-shrink:0; margin-top:1px; opacity:0.4; }
+
+  /* Comparison table */
+  .compare-section { margin-bottom:48px; }
+  .compare-title { font-family:'DM Mono',monospace; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px; }
+  .compare-table { width:100%; border-collapse:collapse; }
+  .compare-table th { font-family:'DM Mono',monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); text-align:left; padding:10px 16px; border-bottom:2px solid var(--border); }
+  .compare-table td { padding:10px 16px; border-bottom:1px solid var(--border); font-size:0.82rem; color:var(--text-dim); }
+  .compare-table td:nth-child(2), .compare-table td:nth-child(3), .compare-table th:nth-child(2), .compare-table th:nth-child(3) { text-align:center; width:120px; }
+  .compare-table .yes { color:var(--green); font-weight:600; }
+  .compare-table .no { color:var(--text-muted); opacity:0.4; }
+  .compare-table .limit { color:var(--text-dim); }
+
+  /* FAQ */
+  .faq-section { margin-bottom:48px; }
+  .faq-item { border-bottom:1px solid var(--border); padding:18px 0; }
+  .faq-q { font-size:0.92rem; font-weight:500; color:var(--text); cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+  .faq-a { font-size:0.82rem; color:var(--text-dim); line-height:1.65; padding-top:10px; display:none; }
+  .faq-item.open .faq-a { display:block; }
+  .faq-item.open .faq-arrow { transform:rotate(180deg); }
+  .faq-arrow { color:var(--text-muted); transition:transform 0.2s; font-size:0.7rem; }
+
+  footer { border-top:1px solid var(--border); padding:2rem; text-align:center; font-size:0.78rem; color:var(--text-muted); position:relative; z-index:1; }
+  footer a { color:var(--text-dim); margin:0 12px; }
+
+  @media (max-width:700px) { .pricing-grid { grid-template-columns:1fr; } .hero-title { font-size:2rem; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">annoti<span>a</span></a>
+    <div class="header-nav">
+      <a href="/">Feed</a>
+      <a href="/about.html">About</a>
+      <a href="/pricing.html" style="color:var(--gold)">Pricing</a>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <div class="hero-eyebrow">Pricing</div>
+  <h1 class="hero-title">Simple, <em>honest</em> pricing</h1>
+  <p class="hero-sub">Free for the essentials. Pro for researchers who want the full toolkit.</p>
+
+  <!-- Pricing Cards -->
+  <div class="pricing-grid">
+    <!-- Free -->
+    <div class="pricing-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0<span class="per">/forever</span></div>
+      <div class="plan-desc">Everything you need to browse research, join discussions, and save papers.</div>
+      <a href="/" class="plan-btn plan-btn-ghost">Get started</a>
+      <ul class="feature-list">
+        <li><span class="check">✓</span> Search 250M+ open access papers</li>
+        <li><span class="check">✓</span> 5 AI summaries per month</li>
+        <li><span class="check">✓</span> Join discussions & vote</li>
+        <li><span class="check">✓</span> Save papers (up to 3 collections)</li>
+        <li><span class="check">✓</span> Community confidence scores</li>
+        <li><span class="check">✓</span> Basic profile</li>
+        <li><span class="x">—</span> <span style="opacity:0.5">Pro badge</span></li>
+        <li><span class="x">—</span> <span style="opacity:0.5">Custom alerts</span></li>
+        <li><span class="x">—</span> <span style="opacity:0.5">Advanced export</span></li>
+      </ul>
+    </div>
+
+    <!-- Pro -->
+    <div class="pricing-card featured">
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">$7<span class="per">/month</span></div>
+      <div class="plan-desc">The full research toolkit. Unlimited summaries, advanced features, and priority access.</div>
+      <a href="/" class="plan-btn plan-btn-gold">Upgrade to Pro</a>
+      <ul class="feature-list">
+        <li><span class="check">✓</span> Everything in Free</li>
+        <li><span class="check">✓</span> <strong style="color:var(--text)">Unlimited</strong> AI summaries</li>
+        <li><span class="check">✓</span> Unlimited collections</li>
+        <li><span class="check">✓</span> Pro badge on your profile</li>
+        <li><span class="check">✓</span> Advanced search filters</li>
+        <li><span class="check">✓</span> Custom alerts for new papers in your field</li>
+        <li><span class="check">✓</span> Priority access to new fields & features</li>
+        <li><span class="check">✓</span> Advanced export (CV-ready citations)</li>
+        <li><span class="check">✓</span> Ad-free experience</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Comparison Table -->
+  <div class="compare-section">
+    <div class="compare-title">Full feature comparison</div>
+    <table class="compare-table">
+      <thead>
+        <tr><th>Feature</th><th>Free</th><th>Pro</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Search open access papers</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>AI-powered summaries</td><td class="limit">5/month</td><td class="yes">Unlimited</td></tr>
+        <tr><td>Join discussions & comment</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Confidence voting</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Save papers</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Collections</td><td class="limit">3 max</td><td class="yes">Unlimited</td></tr>
+        <tr><td>Pro profile badge</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>Advanced search filters</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>Custom paper alerts</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>CV-ready citation export</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>Priority access to new features</td><td class="no">—</td><td class="yes">✓</td></tr>
+        <tr><td>Ad-free</td><td class="no">—</td><td class="yes">✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-section">
+    <div class="compare-title">Frequently asked questions</div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Can I cancel Pro anytime?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">Yes. Cancel anytime from your dashboard. You'll keep Pro access until the end of your billing period.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">What happens when I hit 5 AI summaries on Free?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">You can still browse papers, read existing summaries, and participate in discussions. You just can't generate new AI summaries until the next month — or you can upgrade to Pro for unlimited.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Is Annotia only for academics?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">Not at all. Annotia is for anyone who wants to engage with research — clinicians, students, journalists, curious minds. The AI summaries are specifically designed to make papers accessible to non-specialists.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">What papers can I access?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">We index over 250 million open access papers from OpenAlex and Semantic Scholar. We only surface freely available research — no paywalled content, ever.</div>
+    </div>
+
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-q">Will there be a team/institutional plan?<span class="faq-arrow">▾</span></div>
+      <div class="faq-a">We're exploring this. If your institution is interested, reach out and we'll prioritise it.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>© 2026 Annotia · Open Science for Everyone</div>
+  <div style="margin-top:8px"><a href="/">Feed</a><a href="/about.html">About</a><a href="/pricing.html">Pricing</a></div>
+</footer>
+
+</body>
+</html>
