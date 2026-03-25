@@ -124,7 +124,7 @@
       <div class="plan-name">Pro</div>
       <div class="plan-price">$7<span class="per">/month</span></div>
       <div class="plan-desc">The full research toolkit. Unlimited summaries, advanced features, and priority access.</div>
-      <a href="/" class="plan-btn plan-btn-gold">Upgrade to Pro</a>
+      <button class="plan-btn plan-btn-gold" onclick="upgradeToPro()" id="proUpgradeBtn">Upgrade to Pro</button>
       <ul class="feature-list">
         <li><span class="check">✓</span> Everything in Free</li>
         <li><span class="check">✓</span> <strong style="color:var(--text)">Unlimited</strong> AI summaries</li>
@@ -199,5 +199,69 @@
   <div style="margin-top:8px"><a href="/">Feed</a><a href="/about.html">About</a><a href="/pricing.html">Pricing</a></div>
 </footer>
 
+<script>
+let sb = null;
+
+async function init() {
+  try {
+    const resp = await fetch('/api/config');
+    const { url, anonKey } = await resp.json();
+    if (url && anonKey && window.supabase) {
+      sb = window.supabase.createClient(url, anonKey);
+    }
+  } catch(e) {}
+
+  // Check if already Pro
+  if (sb) {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      const { data: profile } = await sb.from('profiles').select('is_pro').eq('id', user.id).single();
+      if (profile?.is_pro) {
+        const btn = document.getElementById('proUpgradeBtn');
+        btn.textContent = '✓ You\'re on Pro';
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'default';
+        btn.onclick = null;
+      }
+    }
+  }
+}
+
+async function upgradeToPro() {
+  if (!sb) { alert('Please sign in first.'); return; }
+
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) {
+    window.location.href = '/?login=1';
+    return;
+  }
+
+  const btn = document.getElementById('proUpgradeBtn');
+  btn.textContent = 'Redirecting...';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, email: user.email }),
+    });
+    const data = await resp.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert('Failed to start checkout: ' + (data.error || 'Unknown error'));
+      btn.textContent = 'Upgrade to Pro';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    alert('Something went wrong. Please try again.');
+    btn.textContent = 'Upgrade to Pro';
+    btn.disabled = false;
+  }
+}
+
+init();
+</script>
 </body>
 </html>

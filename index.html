@@ -730,6 +730,13 @@ async function submitPaper() {
 async function getSummaryUsage() {
   if (!sb) return { used: 0, limit: 5, isPro: false };
 
+  // Check Pro status
+  let isPro = false;
+  if (currentUser) {
+    const { data: profile } = await sb.from('profiles').select('is_pro').eq('id', currentUser.id).single();
+    isPro = profile?.is_pro || false;
+  }
+
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
@@ -739,8 +746,7 @@ async function getSummaryUsage() {
     .not('summary_what_studied', 'is', null)
     .gte('updated_at', startOfMonth.toISOString());
 
-  // TODO: check if user is Pro when Stripe is wired
-  return { used: count || 0, limit: 5, isPro: false };
+  return { used: count || 0, limit: 5, isPro };
 }
 
 async function checkSummaryQuota() {

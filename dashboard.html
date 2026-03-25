@@ -212,6 +212,12 @@ async function init() {
   await loadProfile();
   await loadDashboard();
 
+  // Pro success redirect
+  if (window.location.search.includes('pro=success')) {
+    showToast('Welcome to Pro! Your account has been upgraded.');
+    window.history.replaceState({}, '', '/dashboard.html');
+  }
+
   document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('dashContent').style.display = '';
 }
@@ -225,9 +231,14 @@ async function loadProfile() {
 
   const typeLabels = { MD:'Physician', NP:'Nurse Practitioner', scientist:'Scientist', pharmacist:'Pharmacist', psychologist:'Psychologist', student:'Student', other:'Other' };
   const userType = profile.user_type || profile.role || '';
+  let typeBadges = '';
   if (userType) {
-    document.getElementById('profileType').innerHTML = `<span class="profile-type">${typeLabels[userType] || userType}</span>`;
+    typeBadges += `<span class="profile-type">${typeLabels[userType] || userType}</span>`;
   }
+  if (profile.is_pro) {
+    typeBadges += `<span class="profile-type" style="background:rgba(201,168,76,0.15);color:var(--gold);margin-left:6px">✦ Pro</span>`;
+  }
+  document.getElementById('profileType').innerHTML = typeBadges;
 
   // Links
   const linksEl = document.getElementById('profileLinks');
