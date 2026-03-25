@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annotia — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #181f2e; --surface: #222a3d; --surface2: #2a3450; --surface3: #334060;
+    --border: #3a4d70; --border-light: #4a5f85;
+    --gold: #d4b05a; --gold-dim: rgba(201,168,76,0.12);
+    --teal: #5ab4c8; --teal-dim: rgba(74,158,173,0.12);
+    --green: #5ab882; --red: #d06060;
+    --text: #f0ece4; --text-dim: #a0adc8; --text-muted: #6a7a96;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.4; }
+  a { text-decoration:none; color:inherit; }
+
+  header { position:fixed; top:0; left:0; right:0; z-index:100; padding:0 2rem; border-bottom:1px solid var(--border); background:rgba(10,13,20,0.88); backdrop-filter:blur(16px); }
+  .header-inner { max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:60px; }
+  .logo { font-family:'Cormorant Garamond',serif; font-size:1.7rem; font-weight:700; color:var(--text); letter-spacing:0.02em; }
+  .logo span { color:var(--gold); }
+  .header-nav { display:flex; align-items:center; gap:1.2rem; }
+  .header-nav a { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; }
+
+  .shell { max-width:800px; margin:0 auto; padding:84px 2rem 80px; position:relative; z-index:1; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px; }
+  .card-title { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:16px; }
+
+  .profile-header { display:flex; gap:20px; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; }
+  .avatar { width:72px; height:72px; border-radius:50%; background:var(--surface2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:28px; overflow:hidden; flex-shrink:0; cursor:pointer; }
+  .avatar img { width:100%; height:100%; object-fit:cover; }
+  .profile-name { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; color:var(--text); }
+  .profile-type { font-family:'DM Mono',monospace; font-size:0.7rem; padding:3px 10px; border-radius:4px; background:var(--gold-dim); color:var(--gold); letter-spacing:0.06em; text-transform:uppercase; display:inline-block; margin-top:4px; }
+
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  .form-group { margin-bottom:14px; }
+  .form-label { font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; display:block; margin-bottom:6px; }
+  .form-input { width:100%; padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:inherit; font-size:0.85rem; outline:none; }
+  .form-input:focus { border-color:var(--gold); }
+  .form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23d4b05a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; cursor:pointer; }
+  .form-textarea { resize:vertical; min-height:80px; line-height:1.6; }
+  .btn { font-family:'DM Mono',monospace; font-size:0.75rem; padding:10px 20px; border-radius:6px; cursor:pointer; border:none; letter-spacing:0.05em; text-transform:uppercase; font-weight:500; }
+  .btn-gold { background:var(--gold); color:var(--bg); }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text-dim); }
+
+  .saved-item { padding:12px 0; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .saved-item:last-child { border-bottom:none; }
+  .saved-title { font-size:0.88rem; font-weight:500; color:var(--text); line-height:1.35; cursor:pointer; }
+  .saved-title:hover { color:var(--gold); }
+  .saved-meta { font-size:0.72rem; color:var(--text-muted); margin-top:3px; }
+
+  .stat-row { display:flex; gap:12px; margin-bottom:20px; }
+  .stat-pill { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; text-align:center; }
+  .stat-value { font-family:'Cormorant Garamond',serif; font-size:1.6rem; font-weight:600; color:var(--text); }
+  .stat-label { font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; margin-top:4px; }
+
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(60px); background:var(--surface2); border:1px solid var(--gold); color:var(--gold); padding:10px 20px; border-radius:8px; font-size:0.82rem; font-weight:500; z-index:300; transition:transform 0.25s; pointer-events:none; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  .links-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .link-badge { display:inline-flex; align-items:center; gap:5px; font-size:0.75rem; font-weight:500; padding:4px 12px; border-radius:20px; }
+
+  #loadingScreen { display:flex; align-items:center; justify-content:center; min-height:60vh; color:var(--text-muted); font-size:0.85rem; }
+  .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.6s linear infinite; margin-right:8px; vertical-align:middle; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media (max-width:600px) { .form-row { grid-template-columns:1fr; } .stat-row { flex-wrap:wrap; } .profile-header { flex-direction:column; align-items:center; text-align:center; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">annoti<span>a</span></a>
+    <div class="header-nav">
+      <a href="/">Feed</a>
+      <a href="/demo.html">Paper Reader</a>
+      <a href="#" id="navSignOut" onclick="doSignOut()" style="display:none">Sign out</a>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <div id="loadingScreen"><span class="spinner"></span> Loading dashboard...</div>
+  <div id="dashContent" style="display:none">
+
+    <!-- Profile Card -->
+    <div class="card">
+      <div class="card-title">Your Profile</div>
+      <div class="profile-header">
+        <div class="avatar" id="avatarEl" onclick="uploadAvatar()" title="Click to upload photo">
+          <span id="avatarEmoji">👤</span>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="profile-name" id="profileName">—</div>
+          <div id="profileType"></div>
+          <div class="links-row" id="profileLinks"></div>
+        </div>
+        <button class="btn btn-ghost" onclick="toggleEdit()" id="editBtn">Edit profile</button>
+      </div>
+      <div id="profileBio" style="font-size:0.85rem;color:var(--text-dim);line-height:1.6"></div>
+
+      <!-- Edit form (hidden by default) -->
+      <div id="editForm" style="display:none;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+        <div class="form-row">
+          <div>
+            <label class="form-label">Full name</label>
+            <input class="form-input" id="editName" placeholder="Your name" />
+          </div>
+          <div>
+            <label class="form-label">User type</label>
+            <select class="form-input form-select" id="editType">
+              <option value="">Select...</option>
+              <option value="MD">MD — Physician</option>
+              <option value="NP">NP — Nurse Practitioner</option>
+              <option value="scientist">Scientist / Researcher</option>
+              <option value="pharmacist">Pharmacist</option>
+              <option value="psychologist">Psychologist</option>
+              <option value="student">Student</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label class="form-label">Institution</label>
+            <input class="form-input" id="editInstitution" placeholder="University, hospital, org..." />
+          </div>
+          <div>
+            <label class="form-label">ORCID iD</label>
+            <input class="form-input" id="editOrcid" placeholder="0000-0000-0000-0000" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">LinkedIn username</label>
+          <div style="display:flex;align-items:center;gap:0">
+            <span style="font-size:0.78rem;color:var(--text-muted);background:var(--surface3);padding:10px 12px;border:1px solid var(--border);border-right:none;border-radius:6px 0 0 6px">linkedin.com/in/</span>
+            <input class="form-input" id="editLinkedin" placeholder="your-username" style="border-radius:0 6px 6px 0" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bio</label>
+          <textarea class="form-input form-textarea" id="editBio" placeholder="Tell the community about your research interests..." maxlength="1000"></textarea>
+          <div style="font-size:0.7rem;color:var(--text-muted);text-align:right;margin-top:4px"><span id="bioCount">0</span> / 1000</div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-ghost" onclick="toggleEdit()">Cancel</button>
+          <button class="btn btn-gold" onclick="saveProfile()">Save changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-row">
+      <div class="stat-pill"><div class="stat-value" id="statSaved">0</div><div class="stat-label">Saved Papers</div></div>
+      <div class="stat-pill"><div class="stat-value" id="statComments">0</div><div class="stat-label">Comments</div></div>
+      <div class="stat-pill"><div class="stat-value" id="statVotes">0</div><div class="stat-label">Votes Cast</div></div>
+      <div class="stat-pill"><div class="stat-value" id="statCollections">0</div><div class="stat-label">Collections</div></div>
+    </div>
+
+    <!-- Saved Papers -->
+    <div class="card">
+      <div class="card-title">Saved Papers</div>
+      <div id="savedPapers"><div style="color:var(--text-muted);font-size:0.85rem">No saved papers yet.</div></div>
+    </div>
+
+    <!-- Recent Comments -->
+    <div class="card">
+      <div class="card-title">Recent Comments</div>
+      <div id="recentComments"><div style="color:var(--text-muted);font-size:0.85rem">No comments yet.</div></div>
+    </div>
+
+    <!-- Collections -->
+    <div class="card">
+      <div class="card-title">Your Collections</div>
+      <div id="userCollections"><div style="color:var(--text-muted);font-size:0.85rem">No collections yet.</div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let sb = null;
+let profile = null;
+let userId = null;
+
+async function init() {
+  try {
+    const resp = await fetch('/api/config');
+    const { url, anonKey } = await resp.json();
+    if (url && anonKey && window.supabase) {
+      sb = window.supabase.createClient(url, anonKey);
+    }
+  } catch(e) {}
+
+  if (!sb) { document.getElementById('loadingScreen').innerHTML = 'Service unavailable.'; return; }
+
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { window.location.href = '/?login=1'; return; }
+
+  userId = user.id;
+  document.getElementById('navSignOut').style.display = '';
+  await loadProfile();
+  await loadDashboard();
+
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('dashContent').style.display = '';
+}
+
+async function loadProfile() {
+  const { data } = await sb.from('profiles').select('*').eq('id', userId).single();
+  profile = data || {};
+
+  document.getElementById('profileName').textContent = profile.full_name || 'Anonymous';
+  document.getElementById('profileBio').textContent = profile.bio || '';
+
+  const typeLabels = { MD:'Physician', NP:'Nurse Practitioner', scientist:'Scientist', pharmacist:'Pharmacist', psychologist:'Psychologist', student:'Student', other:'Other' };
+  const userType = profile.user_type || profile.role || '';
+  if (userType) {
+    document.getElementById('profileType').innerHTML = `<span class="profile-type">${typeLabels[userType] || userType}</span>`;
+  }
+
+  // Links
+  const linksEl = document.getElementById('profileLinks');
+  let linksHtml = '';
+  if (profile.institution) linksHtml += `<span class="link-badge" style="background:var(--teal-dim);color:var(--teal)">${profile.institution}</span>`;
+  if (profile.orcid) linksHtml += `<a href="https://orcid.org/${profile.orcid}" target="_blank" class="link-badge" style="background:rgba(166,206,57,0.12);color:#a6ce39">ORCID ${profile.orcid}</a>`;
+  if (profile.linkedin) linksHtml += `<a href="https://linkedin.com/in/${profile.linkedin}" target="_blank" class="link-badge" style="background:rgba(10,102,194,0.12);color:#5b9bd5"><strong style="font-weight:900">in</strong> ${profile.linkedin}</a>`;
+  linksEl.innerHTML = linksHtml;
+
+  // Avatar
+  if (profile.avatar_url) {
+    document.getElementById('avatarEl').innerHTML = `<img src="${profile.avatar_url}" alt="Avatar"/>`;
+  }
+}
+
+async function loadDashboard() {
+  // Saved papers
+  const { data: saved, count: savedCount } = await sb.from('saved_papers').select('*, paper:papers(doi, title, journal, year)', { count: 'exact' }).eq('user_id', userId).order('created_at', { ascending: false }).limit(5);
+  document.getElementById('statSaved').textContent = savedCount || 0;
+  if (saved && saved.length > 0) {
+    document.getElementById('savedPapers').innerHTML = saved.map(s => {
+      const p = s.paper;
+      return `<div class="saved-item">
+        <div><div class="saved-title" onclick="window.location.href='/demo.html?doi=${encodeURIComponent(p?.doi || '')}'">
+          ${p?.title || 'Untitled'}</div>
+          <div class="saved-meta">${p?.journal || ''} ${p?.year ? '· '+p.year : ''}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Comments
+  const { data: comments, count: commentCount } = await sb.from('comments').select('*, paper:papers(doi, title)', { count: 'exact' }).eq('user_id', userId).order('created_at', { ascending: false }).limit(5);
+  document.getElementById('statComments').textContent = commentCount || 0;
+  if (comments && comments.length > 0) {
+    document.getElementById('recentComments').innerHTML = comments.map(c => {
+      return `<div class="saved-item">
+        <div><div class="saved-title" onclick="window.location.href='/demo.html?doi=${encodeURIComponent(c.paper?.doi || '')}'">
+          ${c.paper?.title || 'Paper'}</div>
+          <div class="saved-meta" style="margin-top:6px;color:var(--text-dim);font-size:0.82rem;line-height:1.5">"${(c.body || '').slice(0, 120)}${c.body?.length > 120 ? '...' : ''}"</div>
+          <div class="saved-meta">${timeAgo(c.created_at)}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Votes
+  const { count: voteCount } = await sb.from('confidence_votes').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+  document.getElementById('statVotes').textContent = voteCount || 0;
+
+  // Collections
+  const { data: collections, count: collCount } = await sb.from('collections').select('*, collection_papers(count)', { count: 'exact' }).eq('user_id', userId).order('created_at', { ascending: false });
+  document.getElementById('statCollections').textContent = collCount || 0;
+  if (collections && collections.length > 0) {
+    document.getElementById('userCollections').innerHTML = collections.map(c => {
+      const paperCount = c.collection_papers?.[0]?.count || 0;
+      return `<div class="saved-item">
+        <div><div class="saved-title">${c.name}</div>
+          <div class="saved-meta">${paperCount} paper${paperCount !== 1 ? 's' : ''} · ${c.is_public ? 'Public' : 'Private'}</div></div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function toggleEdit() {
+  const form = document.getElementById('editForm');
+  const isHidden = form.style.display === 'none';
+  form.style.display = isHidden ? '' : 'none';
+  document.getElementById('editBtn').textContent = isHidden ? 'Cancel' : 'Edit profile';
+
+  if (isHidden && profile) {
+    document.getElementById('editName').value = profile.full_name || '';
+    document.getElementById('editType').value = profile.user_type || profile.role || '';
+    document.getElementById('editInstitution').value = profile.institution || '';
+    document.getElementById('editOrcid').value = profile.orcid || '';
+    document.getElementById('editLinkedin').value = profile.linkedin || '';
+    document.getElementById('editBio').value = profile.bio || '';
+    document.getElementById('bioCount').textContent = (profile.bio || '').length;
+  }
+}
+
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'editBio') {
+    document.getElementById('bioCount').textContent = e.target.value.length;
+  }
+});
+
+async function saveProfile() {
+  const updates = {
+    full_name: document.getElementById('editName').value.trim() || null,
+    user_type: document.getElementById('editType').value || null,
+    institution: document.getElementById('editInstitution').value.trim() || null,
+    orcid: document.getElementById('editOrcid').value.trim() || null,
+    linkedin: document.getElementById('editLinkedin').value.trim() || null,
+    bio: document.getElementById('editBio').value.trim() || null,
+  };
+
+  const { error } = await sb.from('profiles').update(updates).eq('id', userId);
+  if (error) {
+    showToast('Failed to save: ' + error.message);
+    return;
+  }
+
+  await loadProfile();
+  document.getElementById('editForm').style.display = 'none';
+  document.getElementById('editBtn').textContent = 'Edit profile';
+  showToast('Profile updated');
+}
+
+async function uploadAvatar() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const path = `${userId}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await sb.storage.from('avatars').upload(path, file, { cacheControl: '3600', upsert: false });
+    if (uploadError) {
+      // Try creating bucket if it doesn't exist (will fail silently if no permission)
+      showToast('Upload failed — avatar storage may not be configured yet.');
+      return;
+    }
+
+    const { data } = sb.storage.from('avatars').getPublicUrl(path);
+    await sb.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', userId);
+    await loadProfile();
+    showToast('Avatar updated');
+  };
+  input.click();
+}
+
+async function doSignOut() {
+  if (sb) await sb.auth.signOut();
+  window.location.href = '/';
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+init();
+</script>
+</body>
+</html>
