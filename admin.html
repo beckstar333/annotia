@@ -97,7 +97,49 @@
 
     <!-- Users tab -->
     <div id="usersTab">
-      <input class="search-input" id="userSearch" placeholder="Search users by name or email..." oninput="filterUsers()" />
+      <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">
+        <input class="search-input" id="userSearch" placeholder="Search users by name or email..." oninput="filterUsers()" style="margin-bottom:0;flex:1" />
+        <button class="btn btn-gold" onclick="showInviteForm()" style="white-space:nowrap;padding:10px 16px">+ Invite User</button>
+      </div>
+
+      <!-- Invite form -->
+      <div id="inviteForm" style="display:none" class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:0">Invite New User</div>
+          <button class="btn btn-ghost" onclick="hideInviteForm()" style="font-size:0.68rem">Cancel</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div>
+            <label style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:6px">Email *</label>
+            <input class="search-input" id="inviteEmail" placeholder="user@email.com" style="margin-bottom:0" />
+          </div>
+          <div>
+            <label style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:6px">Full name</label>
+            <input class="search-input" id="inviteName" placeholder="Optional" style="margin-bottom:0" />
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div>
+            <label style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:6px">User type</label>
+            <select class="search-input" id="inviteType" style="margin-bottom:0;cursor:pointer">
+              <option value="">Not specified</option>
+              <option value="MD">MD — Physician</option>
+              <option value="NP">NP — Nurse Practitioner</option>
+              <option value="scientist">Scientist / Researcher</option>
+              <option value="pharmacist">Pharmacist</option>
+              <option value="psychologist">Psychologist</option>
+              <option value="student">Student</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end;padding-bottom:4px">
+            <label style="font-size:0.82rem;color:var(--text-dim);display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="invitePro" style="accent-color:var(--gold)" /> Grant Pro access
+            </label>
+          </div>
+        </div>
+        <button class="btn btn-gold" onclick="sendInvite()" id="inviteBtn" style="width:100%;padding:10px">Send Invite</button>
+      </div>
       <div class="card" style="padding:0;overflow:hidden">
         <table>
           <thead><tr><th>User</th><th>Type</th><th>Plan</th><th>Papers Saved</th><th>Comments</th><th>Joined</th><th>Actions</th></tr></thead>
@@ -325,6 +367,55 @@ async function resolveFlag(flagId, status) {
 
   loadFlags();
   showToast('Flag ' + status);
+}
+
+// ─── Invite ──────────────────────────────────────────────────────────────────
+function showInviteForm() {
+  document.getElementById('inviteForm').style.display = '';
+  document.getElementById('inviteEmail').value = '';
+  document.getElementById('inviteName').value = '';
+  document.getElementById('inviteType').value = '';
+  document.getElementById('invitePro').checked = false;
+}
+function hideInviteForm() { document.getElementById('inviteForm').style.display = 'none'; }
+
+async function sendInvite() {
+  const email = document.getElementById('inviteEmail').value.trim();
+  if (!email) { showToast('Email is required'); return; }
+
+  const btn = document.getElementById('inviteBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('/api/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        fullName: document.getElementById('inviteName').value.trim() || null,
+        userType: document.getElementById('inviteType').value || null,
+        grantPro: document.getElementById('invitePro').checked,
+      }),
+    });
+    const data = await resp.json();
+
+    if (data.error) {
+      showToast('Error: ' + data.error);
+    } else {
+      showToast('Invite sent to ' + email);
+      hideInviteForm();
+      // Reload users
+      const { data: users } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+      allUsers = users || [];
+      renderUsers(allUsers);
+    }
+  } catch(e) {
+    showToast('Failed to send invite');
+  }
+
+  btn.textContent = 'Send Invite';
+  btn.disabled = false;
 }
 
 function switchTab(tab) {
