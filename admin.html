@@ -82,8 +82,13 @@
   <div id="loadingScreen"><span class="spinner"></span> Loading admin...</div>
   <div id="adminContent" style="display:none">
 
-    <h1 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;margin-bottom:6px">Admin Panel</h1>
-    <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:24px">Manage users, papers, and platform settings.</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;margin-bottom:6px">Admin Panel</h1>
+        <p style="font-size:0.85rem;color:var(--text-dim)">Manage users, papers, and platform settings.</p>
+      </div>
+      <button class="btn btn-gold" onclick="fetchPreprints()" id="fetchPreprintsBtn">Fetch Preprints</button>
+    </div>
 
     <!-- Stats -->
     <div class="stat-row" id="adminStats"></div>
@@ -415,6 +420,27 @@ async function sendInvite() {
   }
 
   btn.textContent = 'Send Invite';
+  btn.disabled = false;
+}
+
+async function fetchPreprints() {
+  const btn = document.getElementById('fetchPreprintsBtn');
+  btn.textContent = 'Fetching...';
+  btn.disabled = true;
+  try {
+    const resp = await fetch('/api/fetch-preprints');
+    const data = await resp.json();
+    showToast(`${data.message} (bioRxiv: ${data.biorxiv}, medRxiv: ${data.medrxiv}, psyArXiv: ${data.psyarxiv})`);
+    // Reload papers
+    const { data: papers } = await sb.from('papers').select('*, comments(count)').order('created_at', { ascending: false });
+    allPapers = papers || [];
+    renderPapers(allPapers);
+    // Update stats
+    await loadAdmin();
+  } catch(e) {
+    showToast('Fetch failed: ' + e.message);
+  }
+  btn.textContent = 'Fetch Preprints';
   btn.disabled = false;
 }
 

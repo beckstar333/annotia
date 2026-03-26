@@ -2,5 +2,11 @@
   "version": 2,
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" }
+  ],
+  "crons": [
+    {
+      "path": "/api/fetch-preprints",
+      "schedule": "0 6 * * *"
+    }
   ]
 }
