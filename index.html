@@ -312,6 +312,7 @@
       <button class="tab active" data-tab="feed" onclick="switchTab('feed')">Feed</button>
       <button class="tab" data-tab="search" onclick="switchTab('search')">Search Results</button>
       <button class="tab" data-tab="trending" onclick="switchTab('trending')">Trending</button>
+      <button class="tab" data-tab="preprints" onclick="switchTab('preprints')">Preprints</button>
     </div>
 
     <!-- Feed content -->
@@ -321,6 +322,9 @@
 
     <!-- Search results -->
     <div id="searchContent" style="display:none"></div>
+
+    <!-- Preprints -->
+    <div id="preprintsContent" style="display:none"></div>
 
     <!-- Trending content -->
     <div id="trendingContent" style="display:none"></div>
@@ -592,6 +596,7 @@ async function loadFeed() {
       const result = await sb
         .from('papers')
         .select('*, comments(count)')
+        .eq('is_preprint', false)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -694,8 +699,10 @@ function switchTab(tab) {
   document.getElementById('feedContent').style.display = tab === 'feed' ? '' : 'none';
   document.getElementById('searchContent').style.display = tab === 'search' ? '' : 'none';
   document.getElementById('trendingContent').style.display = tab === 'trending' ? '' : 'none';
+  document.getElementById('preprintsContent').style.display = tab === 'preprints' ? '' : 'none';
 
   if (tab === 'trending') loadTrending();
+  if (tab === 'preprints') loadPreprints();
 }
 
 async function loadTrending() {
@@ -713,6 +720,69 @@ async function loadTrending() {
   } catch(e) {
     container.innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--red)">Failed to load trending papers.</div>';
   }
+}
+
+// ─── Preprints ───────────────────────────────────────────────────────────────
+let preprintsLoaded = false;
+async function loadPreprints() {
+  if (preprintsLoaded) return;
+  const container = document.getElementById('preprintsContent');
+  container.innerHTML = '<div class="loading"><span class="spinner"></span> Loading preprints...</div>';
+
+  if (sb) {
+    try {
+      const { data: papers } = await sb
+        .from('papers')
+        .select('*, comments(count)')
+        .eq('is_preprint', true)
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (papers && papers.length > 0) {
+        // Group by source
+        const biorxiv = papers.filter(p => p.source === 'biorxiv' || p.journal === 'bioRxiv');
+        const medrxiv = papers.filter(p => p.source === 'medrxiv' || p.journal === 'medRxiv');
+        const psyarxiv = papers.filter(p => p.source === 'psyarxiv' || p.journal === 'psyArXiv');
+        const other = papers.filter(p => !['biorxiv','medrxiv','psyarxiv'].includes(p.source) && !['bioRxiv','medRxiv','psyArXiv'].includes(p.journal));
+
+        let html = `<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px">${papers.length} preprints · Updated daily from bioRxiv, medRxiv, and psyArXiv</div>`;
+
+        // Source filter pills
+        html += `<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">
+          <button onclick="filterPreprints('all')" class="pp-filter active" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--gold);background:var(--gold-dim);color:var(--gold);letter-spacing:0.04em">All (${papers.length})</button>
+          ${biorxiv.length ? `<button onclick="filterPreprints('biorxiv')" class="pp-filter" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">bioRxiv (${biorxiv.length})</button>` : ''}
+          ${medrxiv.length ? `<button onclick="filterPreprints('medrxiv')" class="pp-filter" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">medRxiv (${medrxiv.length})</button>` : ''}
+          ${psyarxiv.length ? `<button onclick="filterPreprints('psyarxiv')" class="pp-filter" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">psyArXiv (${psyarxiv.length})</button>` : ''}
+        </div>`;
+
+        html += `<div id="preprintCards">${papers.map(p => renderFeedCard(p)).join('')}</div>`;
+        container.innerHTML = html;
+        window._allPreprints = papers;
+        preprintsLoaded = true;
+        return;
+      }
+    } catch(e) {
+      console.log('Preprints query error:', e);
+    }
+  }
+
+  container.innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--text-muted)">No preprints yet. They\'ll appear here after the next daily fetch.</div>';
+}
+
+function filterPreprints(source) {
+  const papers = window._allPreprints || [];
+  const filtered = source === 'all' ? papers : papers.filter(p =>
+    p.source === source || p.journal?.toLowerCase().replace(/\s/g,'') === source
+  );
+  document.getElementById('preprintCards').innerHTML = filtered.map(p => renderFeedCard(p)).join('');
+
+  // Update active pill
+  document.querySelectorAll('.pp-filter').forEach(b => {
+    const isActive = b.textContent.toLowerCase().includes(source === 'all' ? 'all' : source.replace('rxiv','Rxiv'));
+    b.style.border = isActive ? '1px solid var(--gold)' : '1px solid var(--border)';
+    b.style.background = isActive ? 'var(--gold-dim)' : 'transparent';
+    b.style.color = isActive ? 'var(--gold)' : 'var(--text-muted)';
+  });
 }
 
 // ─── Post Paper Modal ────────────────────────────────────────────────────────
