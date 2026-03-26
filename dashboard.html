@@ -82,6 +82,7 @@
       <a href="/">Feed</a>
       <a href="/about.html">About</a>
       <a href="/pricing.html">Pricing</a>
+      <a href="/admin.html" id="navAdmin" style="display:none;color:var(--gold)">Admin</a>
       <a href="#" id="navSignOut" onclick="doSignOut()" style="display:none">Sign out</a>
     </div>
   </div>
@@ -268,6 +269,9 @@ async function init() {
 
   userId = user.id;
   document.getElementById('navSignOut').style.display = '';
+  if (['beckstar333@yahoo.com'].includes(user.email)) {
+    document.getElementById('navAdmin').style.display = '';
+  }
   await loadProfile();
   await loadDashboard();
   await loadAlerts();
