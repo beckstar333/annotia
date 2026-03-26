@@ -1058,5 +1058,20 @@ async function checkAuth() {
 
 // Boot is handled above in init() with DOMContentLoaded check
 </script>
+
+<!-- Admin link (only visible to admins) -->
+<div id="adminLink" style="display:none;position:fixed;bottom:12px;right:16px;z-index:50">
+  <a href="/admin.html" style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text-muted);opacity:0.3;letter-spacing:0.06em;text-transform:uppercase;transition:opacity 0.15s" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.3'">admin</a>
+</div>
+<script>
+// Show admin link only for admin users
+(async function(){
+  if(!sb)return;
+  const{data:{user}}=await sb.auth.getUser();
+  if(user&&['beckstar333@yahoo.com'].includes(user.email)){
+    document.getElementById('adminLink').style.display='';
+  }
+})();
+</script>
 </body>
 </html>
