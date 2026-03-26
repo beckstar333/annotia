@@ -628,7 +628,7 @@ async function loadFeed() {
 
 // ─── Render ──────────────────────────────────────────────────────────────────
 function renderPaperCard(p) {
-  const authors = (p.authors || []).slice(0, 3).join(', ') + (p.authors?.length > 3 ? ` +${p.authors.length - 3}` : '');
+  const authors = (p.authors || []).length > 3 ? (p.authors || []).slice(0, 3).join(', ') + ' et al.' : (p.authors || []).join(', ');
   const badges = [];
   if (p.is_open_access) badges.push('<span class="badge badge-oa">Open Access</span>');
   if (p.type === 'preprint') badges.push('<span class="badge badge-preprint">Preprint</span>');
@@ -675,7 +675,7 @@ function renderFeedCard(p) {
     <div class="paper-card" onclick="window.location.href='/demo.html?doi=${encodeURIComponent(p.doi)}'">
       <div class="paper-title">${p.title}</div>
       <div class="paper-meta">
-        <span>${p.authors || 'Unknown'}</span>
+        <span>${truncAuthors(p.authors)}</span>
         ${p.journal ? `<span style="color:var(--border-light)">·</span><span style="color:var(--teal)">${p.journal}</span>` : ''}
         ${p.year ? `<span style="color:var(--border-light)">·</span><span>${p.year}</span>` : ''}
         ${badges.join(' ')}
@@ -1010,6 +1010,13 @@ async function generateAndSaveSummary(paper) {
 }
 
 // ─── Utils ───────────────────────────────────────────────────────────────────
+function truncAuthors(str, max = 3) {
+  if (!str) return 'Unknown';
+  const list = str.split(',').map(s => s.trim());
+  if (list.length <= max) return str;
+  return list.slice(0, max).join(', ') + ' et al.';
+}
+
 function timeAgo(dateStr) {
   if (!dateStr) return '';
   const diff = Date.now() - new Date(dateStr).getTime();
