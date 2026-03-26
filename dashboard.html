@@ -32,7 +32,7 @@
   .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px; }
   .card-title { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:16px; }
 
-  .profile-header { display:flex; gap:20px; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; }
+  .profile-header { display:flex; gap:20px; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; position:relative; }
   .avatar { width:72px; height:72px; border-radius:50%; background:var(--surface2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:28px; overflow:hidden; flex-shrink:0; cursor:pointer; }
   .avatar img { width:100%; height:100%; object-fit:cover; }
   .profile-name { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; color:var(--text); }
@@ -95,8 +95,17 @@
     <div class="card">
       <div class="card-title">Your Profile</div>
       <div class="profile-header">
-        <div class="avatar" id="avatarEl" onclick="uploadAvatar()" title="Click to upload photo">
+        <div class="avatar" id="avatarEl" onclick="showAvatarPicker()" title="Click to change avatar">
           <span id="avatarEmoji">👤</span>
+        </div>
+        <!-- Avatar picker -->
+        <div id="avatarPicker" style="display:none;position:absolute;left:0;top:80px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;z-index:10;box-shadow:0 8px 24px rgba(0,0,0,0.4)">
+          <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Choose an avatar</div>
+          <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:12px" id="emojiGrid"></div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;align-items:center;justify-content:space-between">
+            <button class="btn btn-ghost" onclick="uploadAvatar()" style="font-size:0.68rem;padding:5px 10px">Upload photo</button>
+            <button class="btn btn-ghost" onclick="hideAvatarPicker()" style="font-size:0.68rem;padding:5px 10px">Cancel</button>
+          </div>
         </div>
         <div style="flex:1;min-width:0">
           <div class="profile-name" id="profileName">—</div>
@@ -301,7 +310,12 @@ async function loadProfile() {
 
   // Avatar
   if (profile.avatar_url) {
-    document.getElementById('avatarEl').innerHTML = `<img src="${profile.avatar_url}" alt="Avatar"/>`;
+    if (profile.avatar_url.startsWith('emoji:')) {
+      const emoji = profile.avatar_url.replace('emoji:', '');
+      document.getElementById('avatarEl').innerHTML = `<span style="font-size:28px">${emoji}</span>`;
+    } else {
+      document.getElementById('avatarEl').innerHTML = `<img src="${profile.avatar_url}" alt="Avatar"/>`;
+    }
   }
 }
 
@@ -397,7 +411,35 @@ async function saveProfile() {
   showToast('Profile updated');
 }
 
+const AVATAR_EMOJIS = [
+  '👩‍🔬','👨‍🔬','👩‍⚕️','👨‍⚕️','👩‍🎓','👨‍🎓','👩‍💻','👨‍💻',
+  '🧬','🔬','📊','🧪','💊','🧠','📖','✍️',
+  '🦠','🧫','⚗️','🔭','🌡️','💉','🩺','📚',
+  '🐁','🧮','🔎','📝','🎯','💡','⚕️','🌿',
+];
+
+function showAvatarPicker() {
+  const grid = document.getElementById('emojiGrid');
+  grid.innerHTML = AVATAR_EMOJIS.map(e =>
+    `<div onclick="selectEmoji('${e}')" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border-radius:6px;transition:background 0.1s;border:1px solid transparent" onmouseover="this.style.background='var(--surface2)';this.style.borderColor='var(--border)'" onmouseout="this.style.background='';this.style.borderColor='transparent'">${e}</div>`
+  ).join('');
+  document.getElementById('avatarPicker').style.display = '';
+}
+
+function hideAvatarPicker() {
+  document.getElementById('avatarPicker').style.display = 'none';
+}
+
+async function selectEmoji(emoji) {
+  // Save emoji as avatar_url with emoji: prefix
+  await sb.from('profiles').update({ avatar_url: 'emoji:' + emoji }).eq('id', userId);
+  document.getElementById('avatarEl').innerHTML = `<span style="font-size:28px">${emoji}</span>`;
+  hideAvatarPicker();
+  showToast('Avatar updated');
+}
+
 async function uploadAvatar() {
+  hideAvatarPicker();
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
