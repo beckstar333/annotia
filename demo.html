@@ -1997,8 +1997,13 @@
         if (_sb) {
           _sb.from('profiles').select('avatar_url').eq('id', user.id).single().then(function(res) {
             if (res.data && res.data.avatar_url) {
-              av.textContent = res.data.avatar_url;
-              av.style.fontSize = '1.1rem';
+              var url = res.data.avatar_url;
+              if (url.startsWith('emoji:')) {
+                av.textContent = url.replace('emoji:', '');
+                av.style.fontSize = '1.1rem';
+              } else {
+                av.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />';
+              }
             }
           });
         }
