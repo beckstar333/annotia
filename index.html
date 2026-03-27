@@ -405,6 +405,21 @@
     </div>
 
     <div id="postPreview" style="display:none"></div>
+    <div id="postCategory" style="display:none;margin:12px 0">
+      <label style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px">Category</label>
+      <select class="modal-input" id="postCategorySelect" style="font-family:'DM Sans',sans-serif;cursor:pointer">
+        <option value="">Auto-detect from AI</option>
+        <option value="Psychology">Psychology</option>
+        <option value="Medicine">Medicine</option>
+        <option value="Neuroscience">Neuroscience</option>
+        <option value="Biology">Biology</option>
+        <option value="Climate">Climate</option>
+        <option value="AI">AI & Computer Science</option>
+        <option value="Radiology">Radiology & Imaging</option>
+        <option value="Economics">Economics</option>
+        <option value="Education">Education</option>
+      </select>
+    </div>
     <div id="summaryQuota" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:0.8rem"></div>
     <div id="postError" style="display:none;color:var(--red);font-size:0.82rem;margin:12px 0"></div>
     <div id="postLoading" style="display:none" class="loading"><span class="spinner"></span> Fetching paper...</div>
@@ -863,6 +878,8 @@ function openPostModal() {
   document.getElementById('postModal').style.display = 'flex';
   document.getElementById('postDoiInput').value = '';
   document.getElementById('postPreview').style.display = 'none';
+  document.getElementById('postCategory').style.display = 'none';
+  document.getElementById('postCategorySelect').value = '';
   document.getElementById('postError').style.display = 'none';
   document.getElementById('postLoading').style.display = 'none';
   document.getElementById('summaryQuota').style.display = 'none';
@@ -915,6 +932,7 @@ async function fetchPaperForPost() {
       </div>
     `;
     document.getElementById('postPreview').style.display = '';
+    document.getElementById('postCategory').style.display = '';
     document.getElementById('postFetchBtn').style.display = 'none';
     document.getElementById('postSubmitBtn').style.display = '';
 
@@ -940,6 +958,7 @@ async function submitPaper() {
   btn.disabled = true;
 
   const p = fetchedPaper;
+  const selectedCategory = document.getElementById('postCategorySelect').value || null;
   const { error } = await sb.from('papers').upsert({
     doi: p.doi,
     title: p.title,
@@ -953,6 +972,7 @@ async function submitPaper() {
     subject: p.subject,
     pdf_url: p.pdf_url,
     license_url: p.license_url,
+    field: selectedCategory,
   }, { onConflict: 'doi' });
 
   if (error) {
@@ -1075,7 +1095,7 @@ async function generateAndSaveSummary(paper) {
       summary_why_care: summaryData.whyCare || null,
       summary_jargon: summaryData.jargonTerms || null,
       summary_count: 1,
-      field: summaryData.field || null,
+      ...(document.getElementById('postCategorySelect')?.value ? {} : { field: summaryData.field || null }),
     }).eq('doi', paper.doi);
 
   } catch (e) {
