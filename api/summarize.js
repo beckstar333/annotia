@@ -42,7 +42,8 @@ Generate a structured JSON summary with exactly these fields. Be accurate, speci
     {"term": "Technical term 4", "definition": "Plain language definition in 1-2 sentences"}
   ],
   "realWorld": "2-3 sentences explaining what these findings mean outside the lab. What are the practical implications for clinicians, policymakers, patients, or the public?",
-  "whyCare": "1-2 sentences explaining why this matters to a non-specialist. What is the broader significance?"
+  "whyCare": "1-2 sentences explaining why this matters to a non-specialist. What is the broader significance?",
+  "field": "One of: Psychology, Medicine, Neuroscience, Biology, Climate, AI, Radiology, Economics, Education. Pick the single best-fitting category for this paper."
 }
 
 Respond with ONLY the JSON object. No preamble, no explanation, no markdown code fences.`;

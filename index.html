@@ -659,6 +659,16 @@ const CATEGORY_KEYWORDS = {
 function matchesCategory(paper, category) {
   if (category === 'all') return true;
   const keywords = CATEGORY_KEYWORDS[category] || [];
+  // Check the normalized field first (if set), then fall back to keyword matching
+  const field = (paper.field || '').toLowerCase();
+  if (field) {
+    const catLower = category.toLowerCase();
+    if (field === catLower || field.includes(catLower)) return true;
+    if (category === 'AI' && (field.includes('computer') || field.includes('ai') || field.includes('machine learning'))) return true;
+    if (category === 'Radiology' && (field.includes('radiology') || field.includes('imaging'))) return true;
+    if (category === 'Climate' && (field.includes('climate') || field.includes('environment'))) return true;
+  }
+  // Keyword fallback
   const text = ((paper.subject || '') + ' ' + (paper.title || '') + ' ' + (paper.abstract || '') + ' ' + (paper.journal || '')).toLowerCase();
   return keywords.some(k => text.includes(k));
 }
@@ -1062,6 +1072,7 @@ async function generateAndSaveSummary(paper) {
       summary_why_care: summaryData.whyCare || null,
       summary_jargon: summaryData.jargonTerms || null,
       summary_count: 1,
+      field: summaryData.field || null,
     }).eq('doi', paper.doi);
 
   } catch (e) {
