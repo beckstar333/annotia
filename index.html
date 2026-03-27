@@ -315,6 +315,19 @@
       <button class="tab" data-tab="preprints" onclick="switchTab('preprints')">Preprints</button>
     </div>
 
+    <!-- Category filters -->
+    <div id="categoryFilters" style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap">
+      <button class="cat-pill active" onclick="filterCategory('all')" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--gold);background:var(--gold-dim);color:var(--gold);letter-spacing:0.04em">All</button>
+      <button class="cat-pill" onclick="filterCategory('Psychology')" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">Psychology</button>
+      <button class="cat-pill" onclick="filterCategory('Medicine')" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">Medicine</button>
+      <button class="cat-pill" onclick="filterCategory('Neuroscience')" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">Neuroscience</button>
+      <button class="cat-pill" onclick="filterCategory('Biology')" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">Biology</button>
+      <button class="cat-pill" onclick="filterCategory('Climate')" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">Climate</button>
+      <button class="cat-pill" onclick="filterCategory('AI')" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">AI & CS</button>
+      <button class="cat-pill" onclick="filterCategory('Economics')" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">Economics</button>
+      <button class="cat-pill" onclick="filterCategory('Education')" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 14px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">Education</button>
+    </div>
+
     <!-- Feed content -->
     <div id="feedContent">
       <div class="loading"><span class="spinner"></span> Loading feed...</div>
@@ -442,6 +455,8 @@ let currentTab = 'feed';
 let fetchedPaper = null;
 let authMode = 'login'; // 'login' or 'signup'
 let currentUser = null;
+let allFeedPapers = [];
+let currentCategory = 'all';
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 async function init() {
@@ -602,7 +617,8 @@ async function loadFeed() {
 
       const papers = result.data;
       if (papers && papers.length > 0) {
-        container.innerHTML = papers.map(p => renderFeedCard(p)).join('');
+        allFeedPapers = papers;
+        renderFeedPapers();
         return;
       }
     } catch(e) {
@@ -624,6 +640,47 @@ async function loadFeed() {
       </div>
     </div>
   `;
+}
+
+// ─── Category Filter ─────────────────────────────────────────────────────────
+const CATEGORY_KEYWORDS = {
+  'Psychology': ['psychology','behavioral','cognitive','mental','psychiatric','social','developmental'],
+  'Medicine': ['medicine','clinical','medical','health','disease','patient','treatment','therapy','cancer','diabetes','lung','cardiac'],
+  'Neuroscience': ['neuro','brain','neural','cognit','cortex','synap'],
+  'Biology': ['biology','biological','genetic','gene','genomic','molecular','cell','evolution','species','protein','biomolec'],
+  'Climate': ['climate','environment','warming','carbon','emission','atmospheric','ocean','ecological','tipping point'],
+  'AI': ['artificial intelligence','machine learning','deep learning','neural network','language model','AI','GPT','computational','computer science','algorithm'],
+  'Economics': ['economic','market','financial','fiscal','monetary','trade','GDP'],
+  'Education': ['education','learning','student','teaching','school','academic','curriculum'],
+};
+
+function matchesCategory(paper, category) {
+  if (category === 'all') return true;
+  const keywords = CATEGORY_KEYWORDS[category] || [];
+  const text = ((paper.subject || '') + ' ' + (paper.title || '') + ' ' + (paper.abstract || '') + ' ' + (paper.journal || '')).toLowerCase();
+  return keywords.some(k => text.includes(k));
+}
+
+function filterCategory(category) {
+  currentCategory = category;
+  // Update pill styles
+  document.querySelectorAll('.cat-pill').forEach(b => {
+    const isActive = b.textContent.trim() === (category === 'all' ? 'All' : category) || (category === 'AI' && b.textContent.includes('AI'));
+    b.style.border = isActive ? '1px solid var(--gold)' : '1px solid var(--border)';
+    b.style.background = isActive ? 'var(--gold-dim)' : 'transparent';
+    b.style.color = isActive ? 'var(--gold)' : 'var(--text-muted)';
+  });
+  renderFeedPapers();
+}
+
+function renderFeedPapers() {
+  const container = document.getElementById('feedContent');
+  const filtered = allFeedPapers.filter(p => matchesCategory(p, currentCategory));
+  if (filtered.length > 0) {
+    container.innerHTML = filtered.map(p => renderFeedCard(p)).join('');
+  } else {
+    container.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text-muted)">No papers in this category yet.</div>`;
+  }
 }
 
 // ─── Render ──────────────────────────────────────────────────────────────────
@@ -663,6 +720,7 @@ function renderFeedCard(p) {
   if (p.is_preprint) badges.push('<span class="badge badge-preprint">Preprint</span>');
   if (p.is_retracted) badges.push('<span class="badge" style="background:rgba(208,96,96,0.15);color:var(--red)">Retracted</span>');
   if (p.summary_what_studied) badges.push('<span class="badge" style="background:var(--teal-dim);color:var(--teal)">AI Summary</span>');
+  if (p.subject) badges.push(`<span class="badge badge-concept">${p.subject}</span>`);
 
   const summaryPreview = p.summary_what_studied
     ? `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin:10px 0;font-size:0.78rem;color:var(--text-dim);line-height:1.55">
