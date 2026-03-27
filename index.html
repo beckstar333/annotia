@@ -658,18 +658,21 @@ const CATEGORY_KEYWORDS = {
 
 function matchesCategory(paper, category) {
   if (category === 'all') return true;
-  const keywords = CATEGORY_KEYWORDS[category] || [];
-  // Check the normalized field first (if set), then fall back to keyword matching
   const field = (paper.field || '').toLowerCase();
+  const catLower = category.toLowerCase();
+
+  // If paper has a field assigned, match only on that
   if (field) {
-    const catLower = category.toLowerCase();
-    if (field === catLower || field.includes(catLower)) return true;
-    if (category === 'AI' && (field.includes('computer') || field.includes('ai') || field.includes('machine learning'))) return true;
+    if (field === catLower) return true;
+    if (category === 'AI' && (field === 'ai' || field.includes('computer') || field.includes('machine learning'))) return true;
     if (category === 'Radiology' && (field.includes('radiology') || field.includes('imaging'))) return true;
     if (category === 'Climate' && (field.includes('climate') || field.includes('environment'))) return true;
+    return false;
   }
-  // Keyword fallback
-  const text = ((paper.subject || '') + ' ' + (paper.title || '') + ' ' + (paper.abstract || '') + ' ' + (paper.journal || '')).toLowerCase();
+
+  // Only use keyword fallback for papers without a field set
+  const keywords = CATEGORY_KEYWORDS[category] || [];
+  const text = ((paper.subject || '') + ' ' + (paper.title || '')).toLowerCase();
   return keywords.some(k => text.includes(k));
 }
 
