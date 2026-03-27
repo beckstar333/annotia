@@ -743,7 +743,7 @@
 
 <header>
   <div class="header-inner">
-    <a href="/" class="logo" onclick="resetApp(); return false;">Anno<span>tia</span></a>
+    <a href="/" class="logo">annoti<span>a</span></a>
     <div class="header-right">
       <span class="header-tag">AI Summary Demo</span>
       <a href="/" class="header-link">Back to Annotia</a>
@@ -977,7 +977,7 @@
 
 <footer>
   <div class="footer-text">
-    <a href="/">Annotia</a> · Open Science for Everyone · AI summaries powered by Claude · <a href="/">Join the waitlist</a>
+    <a href="/">Annotia</a> · Open Science for Everyone · AI summaries powered by Claude
   </div>
 </footer>
 
@@ -2164,7 +2164,16 @@
     var scb = document.getElementById('submitCommentBtn');
     if (scb) scb.onclick = function() { window.submitComment(); };
 
-    init();
+    init().then(function() {
+      // Auto-load paper from URL ?doi= parameter
+      var params = new URLSearchParams(window.location.search);
+      var doi = params.get('doi');
+      if (doi) {
+        document.getElementById('doiInput').value = doi;
+        // Small delay to ensure UI is ready
+        setTimeout(function() { generateSummary(); }, 300);
+      }
+    });
   });
 
   // ── DISCUSSION ──
