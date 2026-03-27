@@ -98,6 +98,7 @@
       <button class="tab active" data-tab="users" onclick="switchTab('users')">Users</button>
       <button class="tab" data-tab="papers" onclick="switchTab('papers')">Papers</button>
       <button class="tab" data-tab="flags" onclick="switchTab('flags')">Flags</button>
+      <button class="tab" data-tab="feedback" onclick="switchTab('feedback')">Feedback</button>
     </div>
 
     <!-- Users tab -->
@@ -167,6 +168,11 @@
     <!-- Flags tab -->
     <div id="flagsTab" style="display:none">
       <div id="flagsContent"><div style="color:var(--text-muted);font-size:0.85rem;padding:40px 0;text-align:center">Loading flags...</div></div>
+    </div>
+
+    <!-- Feedback tab -->
+    <div id="feedbackTab" style="display:none">
+      <div id="feedbackContent"><div style="color:var(--text-muted);font-size:0.85rem;padding:40px 0;text-align:center">Loading feedback...</div></div>
     </div>
 
   </div>
@@ -449,6 +455,38 @@ function switchTab(tab) {
   document.getElementById('usersTab').style.display = tab === 'users' ? '' : 'none';
   document.getElementById('papersTab').style.display = tab === 'papers' ? '' : 'none';
   document.getElementById('flagsTab').style.display = tab === 'flags' ? '' : 'none';
+  document.getElementById('feedbackTab').style.display = tab === 'feedback' ? '' : 'none';
+  if (tab === 'feedback') loadFeedback();
+}
+
+async function loadFeedback() {
+  const { data: items } = await sb.from('feedback').select('*').order('created_at', { ascending: false });
+  const el = document.getElementById('feedbackContent');
+  if (!items || items.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:40px 0;text-align:center">No feedback yet.</div>';
+    return;
+  }
+
+  const typeColors = { general: 'var(--teal)', bug: 'var(--red)', feature: 'var(--gold)', other: 'var(--text-muted)' };
+
+  el.innerHTML = `<div class="card" style="padding:0;overflow:hidden"><table>
+    <thead><tr><th>Type</th><th>Message</th><th>Page</th><th>Date</th><th>Actions</th></tr></thead>
+    <tbody>${items.map(f => `
+      <tr>
+        <td><span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:${typeColors[f.type] || 'var(--text-muted)'};text-transform:uppercase;letter-spacing:0.04em;font-weight:500">${f.type}</span></td>
+        <td style="max-width:350px;font-size:0.82rem;line-height:1.5">${f.message}</td>
+        <td style="font-size:0.72rem;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.page_url || '—'}</td>
+        <td style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap">${f.created_at ? new Date(f.created_at).toLocaleDateString() : '—'}</td>
+        <td><button class="btn btn-ghost" onclick="deleteFeedback('${f.id}')" style="font-size:0.65rem">Dismiss</button></td>
+      </tr>
+    `).join('')}</tbody>
+  </table></div>`;
+}
+
+async function deleteFeedback(id) {
+  await sb.from('feedback').delete().eq('id', id);
+  loadFeedback();
+  showToast('Feedback dismissed');
 }
 
 function showToast(msg) {

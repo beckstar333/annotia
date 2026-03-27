@@ -1227,8 +1227,104 @@ async function checkAuth() {
   if (user) showAuthState(user);
 }
 
+// ─── Feedback ────────────────────────────────────────────────────────────────
+let feedbackType = 'general';
+
+function openFeedbackModal() {
+  document.getElementById('feedbackModal').style.display = 'flex';
+  document.getElementById('feedbackMessage').value = '';
+  document.getElementById('feedbackError').style.display = 'none';
+  feedbackType = 'general';
+  setFeedbackType('general');
+}
+
+function closeFeedbackModal() {
+  document.getElementById('feedbackModal').style.display = 'none';
+}
+
+function setFeedbackType(type) {
+  feedbackType = type;
+  document.querySelectorAll('.fb-type').forEach(b => {
+    const isActive = b.textContent.toLowerCase().includes(type);
+    b.style.border = isActive ? '1px solid var(--gold)' : '1px solid var(--border)';
+    b.style.background = isActive ? 'var(--gold-dim)' : 'transparent';
+    b.style.color = isActive ? 'var(--gold)' : 'var(--text-muted)';
+  });
+}
+
+async function submitFeedback() {
+  const message = document.getElementById('feedbackMessage').value.trim();
+  if (!message) {
+    document.getElementById('feedbackError').textContent = 'Please enter a message.';
+    document.getElementById('feedbackError').style.display = '';
+    return;
+  }
+
+  const btn = document.getElementById('feedbackSubmitBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    if (sb) {
+      const { data: { user } } = await sb.auth.getUser();
+      await sb.from('feedback').insert({
+        user_id: user?.id || null,
+        type: feedbackType,
+        message,
+        page_url: window.location.href,
+      });
+    }
+    closeFeedbackModal();
+    // Show a quick thank you
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--gold);color:var(--gold);padding:10px 20px;border-radius:8px;font-size:0.82rem;font-weight:500;z-index:300;';
+    toast.textContent = 'Thanks for your feedback!';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  } catch(e) {
+    document.getElementById('feedbackError').textContent = 'Failed to send. Please try again.';
+    document.getElementById('feedbackError').style.display = '';
+  }
+  btn.textContent = 'Send Feedback';
+  btn.disabled = false;
+}
+
 // Boot is handled above in init() with DOMContentLoaded check
 </script>
+
+<!-- Feedback button -->
+<div style="position:fixed;bottom:12px;left:16px;z-index:50">
+  <button onclick="openFeedbackModal()" style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);background:var(--surface);border:1px solid var(--border);padding:7px 14px;border-radius:6px;cursor:pointer;letter-spacing:0.04em;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">💬 Feedback</button>
+</div>
+
+<!-- Feedback modal -->
+<div class="modal-overlay" id="feedbackModal" style="display:none" onclick="if(event.target===this)closeFeedbackModal()">
+  <div class="modal" style="width:440px">
+    <div class="modal-title">Send Feedback</div>
+    <div class="modal-sub">Bug, feature request, or just a thought — we read everything.</div>
+
+    <div style="margin-bottom:14px">
+      <label style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px">Type</label>
+      <div style="display:flex;gap:6px" id="feedbackTypePills">
+        <button onclick="setFeedbackType('general')" class="fb-type active" style="font-family:'DM Mono',monospace;font-size:0.7rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--gold);background:var(--gold-dim);color:var(--gold);letter-spacing:0.04em">General</button>
+        <button onclick="setFeedbackType('bug')" class="fb-type" style="font-family:'DM Mono',monospace;font-size:0.7rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">Bug</button>
+        <button onclick="setFeedbackType('feature')" class="fb-type" style="font-family:'DM Mono',monospace;font-size:0.7rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">Feature Request</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--text-muted);letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:6px">Message</label>
+      <textarea class="modal-input" id="feedbackMessage" placeholder="What's on your mind?" style="font-family:'DM Sans',sans-serif;min-height:100px;resize:vertical;line-height:1.6"></textarea>
+    </div>
+
+    <div id="feedbackError" style="display:none;color:var(--red);font-size:0.82rem;margin-bottom:12px"></div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="modal-btn modal-btn-ghost" onclick="closeFeedbackModal()">Cancel</button>
+      <button class="modal-btn modal-btn-primary" id="feedbackSubmitBtn" onclick="submitFeedback()">Send Feedback</button>
+    </div>
+  </div>
+</div>
 
 <!-- Admin link (only visible to admins) -->
 <div id="adminLink" style="display:none;position:fixed;bottom:12px;right:16px;z-index:50">
