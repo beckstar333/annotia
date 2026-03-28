@@ -109,11 +109,127 @@ export default async function handler(req, res) {
     }
   } catch (e) { results.errors.push('psyArXiv: ' + e.message) }
 
-  const total = results.biorxiv + results.medrxiv + results.psyarxiv
-  console.log(`Preprint fetch: ${total} new (bioRxiv: ${results.biorxiv}, medRxiv: ${results.medrxiv}, psyArXiv: ${results.psyarxiv})`)
+  // ─── arXiv (CS, physics, math, quantitative biology) ───────────────────────
+  results.arxiv = 0
+  try {
+    // arXiv API returns Atom XML — fetch recent papers across key categories
+    const categories = ['cs.AI', 'cs.LG', 'cs.CL', 'q-bio', 'stat.ML', 'physics']
+    for (const cat of categories.slice(0, 3)) {
+      const resp = await fetch(`https://export.arxiv.org/api/query?search_query=cat:${cat}&sortBy=submittedDate&sortOrder=descending&max_results=5`)
+      if (!resp.ok) continue
+      const xml = await resp.text()
+
+      // Simple XML parsing for entries
+      const entries = xml.split('<entry>').slice(1)
+      for (const entry of entries) {
+        const title = (entry.match(/<title>([\s\S]*?)<\/title>/) || [])[1]?.replace(/\s+/g, ' ').trim()
+        const abstract = (entry.match(/<summary>([\s\S]*?)<\/summary>/) || [])[1]?.replace(/\s+/g, ' ').trim()
+        const published = (entry.match(/<published>([\s\S]*?)<\/published>/) || [])[1]?.trim()
+        const arxivId = (entry.match(/<id>([\s\S]*?)<\/id>/) || [])[1]?.trim()?.replace('http://arxiv.org/abs/', '')
+
+        // Extract authors
+        const authorMatches = entry.match(/<name>([\s\S]*?)<\/name>/g) || []
+        const authors = authorMatches.map(a => a.replace(/<\/?name>/g, '').trim()).join(', ')
+
+        if (!title || !arxivId) continue
+
+        // arXiv doesn't have DOIs for all papers — use arxiv ID as DOI-like identifier
+        const doi = `arxiv:${arxivId}`
+        const year = published?.split('-')[0] || ''
+
+        const { error } = await supabase.from('papers').upsert({
+          doi,
+          title,
+          authors: authors || 'Unknown',
+          journal: 'arXiv',
+          year,
+          abstract: abstract || null,
+          is_preprint: true,
+          is_open_access: true,
+          source: 'arxiv',
+          subject: cat.startsWith('cs') ? 'Computer Science' : cat.startsWith('q-bio') ? 'Biology' : cat,
+          field: cat.startsWith('cs') ? 'AI' : cat.startsWith('q-bio') ? 'Biology' : null,
+          pdf_url: `https://arxiv.org/pdf/${arxivId}`,
+        }, { onConflict: 'doi', ignoreDuplicates: true })
+        if (!error) results.arxiv++
+      }
+    }
+  } catch (e) { results.errors.push('arXiv: ' + e.message) }
+
+  // ─── PubMed recent open access ─────────────────────────────────────────────
+  results.pubmed = 0
+  try {
+    // Fetch recent open access papers
+    const searchResp = await fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=open+access[filter]&retmax=10&sort=date&retmode=json&datetype=edat&reldate=7')
+    if (searchResp.ok) {
+      const searchData = await searchResp.json()
+      const ids = searchData.esearchresult?.idlist || []
+
+      if (ids.length > 0) {
+        const fetchResp = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${ids.join(',')}&retmode=json`)
+        if (fetchResp.ok) {
+          const fetchData = await fetchResp.json()
+          for (const id of ids) {
+            const article = fetchData.result?.[id]
+            if (!article || article.error) continue
+
+            const eloc = (article.elocationid || '').replace('doi: ', '')
+            const doi = eloc.startsWith('10.') ? eloc : null
+            if (!doi) continue
+
+            const authors = (article.authors || []).map(a => a.name).join(', ')
+
+            const { error } = await supabase.from('papers').upsert({
+              doi,
+              title: article.title || 'Untitled',
+              authors: authors || 'Unknown',
+              journal: article.fulljournalname || article.source || 'PubMed',
+              year: article.pubdate?.split(' ')[0] || '',
+              abstract: null,
+              is_preprint: false,
+              is_open_access: true,
+              source: 'pubmed',
+              pdf_url: null,
+            }, { onConflict: 'doi', ignoreDuplicates: true })
+            if (!error) results.pubmed++
+          }
+        }
+      }
+    }
+  } catch (e) { results.errors.push('PubMed: ' + e.message) }
+
+  // ─── Europe PMC recent open access ─────────────────────────────────────────
+  results.europepmc = 0
+  try {
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
+    const resp = await fetch(`https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=OPEN_ACCESS:y+FIRST_PDATE:[${weekAgo}+TO+*]&format=json&pageSize=10&sort=DATE_DESC`)
+    if (resp.ok) {
+      const data = await resp.json()
+      for (const article of (data.resultList?.result || [])) {
+        if (!article.doi) continue
+
+        const { error } = await supabase.from('papers').upsert({
+          doi: article.doi,
+          title: article.title || 'Untitled',
+          authors: article.authorString || 'Unknown',
+          journal: article.journalTitle || 'Europe PMC',
+          year: article.pubYear || '',
+          abstract: article.abstractText || null,
+          is_preprint: article.pubType === 'preprint',
+          is_open_access: true,
+          source: 'europepmc',
+          pdf_url: null,
+        }, { onConflict: 'doi', ignoreDuplicates: true })
+        if (!error) results.europepmc++
+      }
+    }
+  } catch (e) { results.errors.push('Europe PMC: ' + e.message) }
+
+  const total = results.biorxiv + results.medrxiv + results.psyarxiv + results.arxiv + results.pubmed + results.europepmc
+  console.log(`Preprint fetch: ${total} new (bioRxiv: ${results.biorxiv}, medRxiv: ${results.medrxiv}, psyArXiv: ${results.psyarxiv}, arXiv: ${results.arxiv}, PubMed: ${results.pubmed}, Europe PMC: ${results.europepmc})`)
 
   res.status(200).json({
-    message: `Fetched ${total} preprints`,
+    message: `Fetched ${total} papers`,
     ...results,
   })
 }

@@ -890,16 +890,18 @@ async function loadPreprints() {
         const biorxiv = papers.filter(p => p.source === 'biorxiv' || p.journal === 'bioRxiv');
         const medrxiv = papers.filter(p => p.source === 'medrxiv' || p.journal === 'medRxiv');
         const psyarxiv = papers.filter(p => p.source === 'psyarxiv' || p.journal === 'psyArXiv');
-        const other = papers.filter(p => !['biorxiv','medrxiv','psyarxiv'].includes(p.source) && !['bioRxiv','medRxiv','psyArXiv'].includes(p.journal));
+        const arxiv = papers.filter(p => p.source === 'arxiv' || p.journal === 'arXiv');
 
-        let html = `<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px">${papers.length} preprints · Updated daily from bioRxiv, medRxiv, and psyArXiv</div>`;
+        let html = `<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px">${papers.length} preprints · Updated daily from bioRxiv, medRxiv, psyArXiv, arXiv, PubMed, and Europe PMC</div>`;
 
         // Source filter pills
+        const pillStyle = 'font-family:"DM Mono",monospace;font-size:0.68rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em';
         html += `<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">
           <button onclick="filterPreprints('all')" class="pp-filter active" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--gold);background:var(--gold-dim);color:var(--gold);letter-spacing:0.04em">All (${papers.length})</button>
-          ${biorxiv.length ? `<button onclick="filterPreprints('biorxiv')" class="pp-filter" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">bioRxiv (${biorxiv.length})</button>` : ''}
-          ${medrxiv.length ? `<button onclick="filterPreprints('medrxiv')" class="pp-filter" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">medRxiv (${medrxiv.length})</button>` : ''}
-          ${psyarxiv.length ? `<button onclick="filterPreprints('psyarxiv')" class="pp-filter" style="font-family:'DM Mono',monospace;font-size:0.68rem;padding:5px 12px;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);letter-spacing:0.04em">psyArXiv (${psyarxiv.length})</button>` : ''}
+          ${biorxiv.length ? `<button onclick="filterPreprints('biorxiv')" class="pp-filter" style="${pillStyle}">bioRxiv (${biorxiv.length})</button>` : ''}
+          ${medrxiv.length ? `<button onclick="filterPreprints('medrxiv')" class="pp-filter" style="${pillStyle}">medRxiv (${medrxiv.length})</button>` : ''}
+          ${psyarxiv.length ? `<button onclick="filterPreprints('psyarxiv')" class="pp-filter" style="${pillStyle}">psyArXiv (${psyarxiv.length})</button>` : ''}
+          ${arxiv.length ? `<button onclick="filterPreprints('arxiv')" class="pp-filter" style="${pillStyle}">arXiv (${arxiv.length})</button>` : ''}
         </div>`;
 
         html += `<div id="preprintCards">${papers.map(p => renderFeedCard(p)).join('')}</div>`;
